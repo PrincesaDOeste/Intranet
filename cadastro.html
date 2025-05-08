@@ -50,10 +50,17 @@
                 </table>
             </div>
         </div>
+
+        <hr>
+        <h3>Importar Aniversariantes (.xlsx)</h3>
+        <input type="file" id="xlsx-input" accept=".xlsx" class="form-control mb-2">
+        <button class="btn btn-success" onclick="importarAniversariantes()">Importar</button>
     </div>
 
     <!-- Importação do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <!-- Biblioteca XLSX -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -61,18 +68,14 @@
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXdxbmNkZnV5d29yY2Jqamx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMTUyNzgsImV4cCI6MjA2MDU5MTI3OH0.o63pZx8l8oe1aEYKEaYVQyHgEvR5FGkfAygTLTvWWVA';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            // Função para carregar usuários
             async function carregarUsuarios() {
                 const { data, error } = await supabase.from('users').select('*');
-
                 if (error) {
                     console.error("Erro ao carregar usuários:", error.message);
                     return;
                 }
-
                 const tabela = document.getElementById('users-table');
-                tabela.innerHTML = ''; // Limpa a tabela antes de recarregar
-
+                tabela.innerHTML = '';
                 data.forEach(user => {
                     const linha = document.createElement('tr');
                     linha.innerHTML = `
@@ -87,50 +90,79 @@
                 });
             }
 
-            // Função para remover usuário
             async function removerUsuario(id) {
                 if (!confirm("Deseja realmente excluir este usuário?")) return;
-
                 const { error } = await supabase.from('users').delete().eq('id', id);
-
                 if (error) {
                     console.error("Erro ao remover usuário:", error.message);
                     alert("Erro ao remover usuário: " + error.message);
                 } else {
                     alert("Usuário removido com sucesso!");
-                    carregarUsuarios(); // Recarrega a lista de usuários
+                    carregarUsuarios();
                 }
             }
 
-            // Função de cadastro
             document.getElementById('cadastro-form').addEventListener('submit', async function (e) {
                 e.preventDefault();
-
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value.trim();
-
                 if (!username || !password) {
                     alert("Por favor, preencha todos os campos!");
                     return;
                 }
-
                 const { data, error } = await supabase.from('users').insert([{ username, password }]);
-
                 if (error) {
                     console.error("Erro ao cadastrar:", error.message);
                     alert("Erro ao cadastrar: " + error.message);
                 } else {
                     alert("Usuário cadastrado com sucesso!");
-                    carregarUsuarios(); // Recarrega a lista de usuários
+                    carregarUsuarios();
                 }
             });
 
-            // Carrega os usuários ao iniciar a página
             carregarUsuarios();
-
-            // Torna a função disponível no escopo global
             window.removerUsuario = removerUsuario;
         });
+
+        async function importarAniversariantes() {
+            const input = document.getElementById('xlsx-input');
+            if (!input.files.length) {
+                alert("Por favor, selecione um arquivo .xlsx");
+                return;
+            }
+
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const aniversariantes = XLSX.utils.sheet_to_json(sheet);
+
+                if (aniversariantes.length === 0) {
+                    alert("O arquivo está vazio.");
+                    return;
+                }
+
+                const registros = aniversariantes.map(p => ({
+                    nome: p.nome,
+                    data_nascimento: p.data_nascimento
+                }));
+
+                const { error } = await supabase.from('aniversarios').insert(registros);
+                if (error) {
+                    console.error("Erro ao importar aniversariantes:", error.message);
+                    alert("Erro ao importar: " + error.message);
+                } else {
+                    alert("Aniversariantes importados com sucesso!");
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
     </script>
 </body>
 </html>
