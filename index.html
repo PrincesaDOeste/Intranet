@@ -168,26 +168,29 @@
                     return;
                 }
 
-            const hoje = new Date();
-const mesAtual = hoje.getMonth();  // 0-11
-const anoAtual = hoje.getFullYear();
+                const hoje = new Date();
+                const mesAtual = hoje.getMonth();  // 0-11
+                const anoAtual = hoje.getFullYear();
 
-data.forEach(({ nome, data }) => {
-    try {
-        const parsedDate = new Date(data);
-        if (!isNaN(parsedDate) &&
-            parsedDate.getMonth() === mesAtual &&
-            parsedDate.getFullYear() === anoAtual) {
-            
-            const formattedDate = parsedDate.toLocaleDateString('pt-BR');
-            const item = `<li class="list-group-item">${nome} - ${formattedDate}</li>`;
-            lista.insertAdjacentHTML('beforeend', item);
+                data.forEach(({ nome, data }) => {
+                    try {
+                        const parsedDate = new Date(data);
+                        if (!isNaN(parsedDate) &&
+                            parsedDate.getMonth() === mesAtual &&
+                            parsedDate.getFullYear() === anoAtual) {
+
+                            const formattedDate = parsedDate.toLocaleDateString('pt-BR');
+                            const item = `<li class="list-group-item">${nome} - ${formattedDate}</li>`;
+                            lista.insertAdjacentHTML('beforeend', item);
+                        }
+                    } catch (e) {
+                        console.error("Erro ao converter data:", e);
+                    }
+                });
+            } catch (e) {
+                console.error("Erro ao carregar dados:", e.message);
+            }
         }
-    } catch (e) {
-        console.error("Erro ao converter data:", e);
-    }
-});
-
 
         async function carregarEventos() {
             try {
