@@ -168,27 +168,26 @@
                     return;
                 }
 
-                data.forEach(({ nome, data }) => {
-                    let formattedDate = 'Data não disponível';
+            const hoje = new Date();
+const mesAtual = hoje.getMonth();  // 0-11
+const anoAtual = hoje.getFullYear();
 
-                    if (data) {
-                        try {
-                            const parsedDate = new Date(data);
-                            if (!isNaN(parsedDate)) {
-                                formattedDate = parsedDate.toLocaleDateString('pt-BR');
-                            }
-                        } catch (e) {
-                            console.error("Erro ao converter data:", e);
-                        }
-                    }
-
-                    const item = `<li class="list-group-item">${nome} - ${formattedDate}</li>`;
-                    lista.insertAdjacentHTML('beforeend', item);
-                });
-            } catch (error) {
-                console.error(`Erro ao carregar dados da tabela ${tabela}:`, error.message);
-            }
+data.forEach(({ nome, data }) => {
+    try {
+        const parsedDate = new Date(data);
+        if (!isNaN(parsedDate) &&
+            parsedDate.getMonth() === mesAtual &&
+            parsedDate.getFullYear() === anoAtual) {
+            
+            const formattedDate = parsedDate.toLocaleDateString('pt-BR');
+            const item = `<li class="list-group-item">${nome} - ${formattedDate}</li>`;
+            lista.insertAdjacentHTML('beforeend', item);
         }
+    } catch (e) {
+        console.error("Erro ao converter data:", e);
+    }
+});
+
 
         async function carregarEventos() {
             try {
