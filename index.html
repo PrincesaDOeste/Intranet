@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
             background-color: #ffffff;
             color: #0d0f96;
         }
+
         .btn-custom {
             background-color: #05afaf;
             color: white;
@@ -20,58 +22,110 @@
             text-transform: uppercase;
             font-weight: bold;
         }
+
         .btn-custom:hover {
             background-color: #ffffff;
             border-inline-start-color: #05afaf;
         }
+
         .carousel-item img {
-            max-height: 500px;
+            max-height: 600px;
+            /* Aumentado de 500px */
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 10px;
         }
+
+        .carousel-container {
+            padding: 15px;
+        }
+
         h1 {
             color: #ffffff;
             background-color: #0f1e6e;
             text-align: center;
-            border-radius: 10px;
-            padding: 10px;
+            border-radius: 7px;
+            padding: 7px;
             font-size: 20px;
+            font-family: Arial, sans-serif;
+            /* Define a fonte como Arial */
         }
+
+        h2 {
+            color: #022cb6;
+            text-align: left;
+            font-size: 18px;
+            font-family: Arial, sans-serif;
+            /* Define a fonte como Arial */
+            font-weight: bold;
+        }
+
         .nav-link.active {
             background-color: #031852;
             color: #05afaf !important;
         }
+
         .card-body {
             background-color: #f8f9fa;
             border-radius: 8px;
             padding: 20px;
         }
+
         .list-group-item {
             border: 1px solid #ddd;
         }
+
         .menu-buttons {
-            margin-top: 10px;
+            margin-top: -35px;
             text-align: right;
+            margin-bottom: 5px;
+            font-family: Arial, sans-serif;
+            /* Define a fonte como Arial */
         }
+
+        /* Estiliza os botões dentro de .menu-buttons */
+        .menu-buttons button {
+            font-size: 12px;
+            /* Tamanho pequeno, mas ainda legível */
+            padding: 9px 10px;
+            height: auto;
+            /* Altura ajustável */
+            border-radius: 8px;
+            /* Cantos arredondados */
+            font-family: Arial, sans-serif;
+            /* Define a fonte como Arial */
+        }
+
         .menu-buttons .btn {
             margin-right: 5px;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
+            font-family: Arial, sans-serif;
+            /* Define a fonte como Arial */
         }
+
         .logo-container {
             text-align: left;
-            margin-bottom: 10px;
+            margin-bottom: 59px;
+            margin-top: -35px;
         }
+
         .logo-container img {
-            width: 300px;
+            width: 220px;
+            margin-bottom: 5px;
+            margin-top: 15px;
         }
+
         .container-flex {
             display: flex;
             justify-content: space-between;
+
+
         }
-        .container-flex > .col {
+
+        .container-flex>.col {
             flex: 1;
-            margin-right: 20px;
+            margin-right: 1px;
         }
+
         .login-button {
             background-color: #ffffff;
             color: #05afaf;
@@ -81,19 +135,62 @@
             text-transform: uppercase;
             font-weight: bold;
         }
+
+        /* ================================
+       AJUSTES PARA DEIXAR A TABELA COM ABAS MAIS COMPACTA
+       ================================ */
+
+        .col {
+            max-width: 970px;
+            /* Limita a largura da coluna onde estão as abas */
+            font-size: 0.9rem;
+            /* Diminui o tamanho da fonte no conteúdo */
+        }
+
+        .tab-content {
+            margin-top: 5px;
+            /* Reduz o espaçamento entre as abas e o conteúdo */
+        }
+
+        .list-group-item {
+            padding: 1px 8px;
+            /* Reduz o espaçamento interno dos itens */
+            font-size: 0.85rem;
+            /* Diminui o tamanho da fonte dos itens da lista */
+        }
+
+        .nav-tabs .nav-link {
+            padding: 6px 10px;
+            /* Reduz o tamanho das abas */
+            font-size: 0.85rem;
+            /* Fonte menor nas abas */
+        }
+
+        .nav-tabs .nav-item {
+            margin-right: 9px;
+            /* Espaçamento menor entre as abas */
+        }
     </style>
 </head>
+
 <body class="p-4">
     <div class="container-flex mt-4">
         <div class="logo-container">
-            <img src="https://www.princesadoeste.com.br/wp-content/uploads/2019/01/LogoPrincesaDoeste389.png" alt="Logo Viação Princesa do Oeste">
+            <img src="https://www.princesadoeste.com.br/wp-content/uploads/2019/01/LogoPrincesaDoeste389.png"
+                alt="Logo Viação Princesa do Oeste">
         </div>
         <div class="menu-buttons">
-            <button class="btn btn-custom" onclick="window.location.href='https://docs.google.com/forms/d/e/1FAIpQLSeq-lALEzem1qXk07OHUT_eikIEHPvTC4UOyZoKfejA-C4cog/viewform'">De olho na frota</button>
-            <button class="btn btn-custom" onclick="window.location.href='https://www.princesadoeste.com.br/cardapio-2/'">Cardápio</button>
-            <button class="btn btn-custom" onclick="window.location.href='https://www.marcosoft.com.br/rhonline/login.php'">Holerite</button>
-            <button class="btn btn-custom" onclick="window.location.href='https://docs.google.com/spreadsheets/d/e/2PACX-1vT_UEC2tnycFafWJc7mtJ8ZXHNj0bPbymqteWHh_eYpowMzHY_lCsZmkoWIgcr9LxONNrUGRIYzDp1W/pubhtml'">Ramais</button>
-            <button class="btn btn-custom" onclick="window.location.href='https://www.princesadoeste.com.br/'">Instituição</button>
+            <button class="btn btn-custom"
+                onclick="window.location.href='https://docs.google.com/forms/d/e/1FAIpQLSeq-lALEzem1qXk07OHUT_eikIEHPvTC4UOyZoKfejA-C4cog/viewform'">De
+                olho na frota</button>
+            <button class="btn btn-custom"
+                onclick="window.location.href='https://www.princesadoeste.com.br/cardapio-2/'">Cardápio</button>
+            <button class="btn btn-custom"
+                onclick="window.location.href='https://www.marcosoft.com.br/rhonline/login.php'">Holerite</button>
+            <button class="btn btn-custom"
+                onclick="window.location.href='https://docs.google.com/spreadsheets/d/e/2PACX-1vT_UEC2tnycFafWJc7mtJ8ZXHNj0bPbymqteWHh_eYpowMzHY_lCsZmkoWIgcr9LxONNrUGRIYzDp1W/pubhtml'">Ramais</button>
+            <button class="btn btn-custom"
+                onclick="window.location.href='https://www.princesadoeste.com.br/'">Instituição</button>
             <button class="btn login-button" onclick="location.href='login.html'">RH</button>
         </div>
     </div>
@@ -115,11 +212,13 @@
                         </div>
                     </div>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselEventos" data-bs-slide="prev">
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselEventos"
+                    data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Anterior</span>
                 </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselEventos" data-bs-slide="next">
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselEventos"
+                    data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Próximo</span>
                 </button>
@@ -129,16 +228,18 @@
         <div class="col">
             <ul class="nav nav-tabs" id="tabData">
                 <li class="nav-item">
-                    <a class="nav-link active" id="aniversariantes-tab" data-bs-toggle="tab" href="#tabAniversariantes">Aniversariantes</a>
+                    <a class="nav-link active" id="aniversariantes-tab" data-bs-toggle="tab"
+                        href="#tabAniversariantes">Aniversariantes</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="feriados-tab" data-bs-toggle="tab" href="#tabFeriados">Feriados</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="cestas-tab" data-bs-toggle="tab" href="#tabCestas">Datas de retirada da cesta</a>
+                    <a class="nav-link" id="cestas-tab" data-bs-toggle="tab" href="#tabCestas">Datas de retirada da
+                        cesta</a>
                 </li>
             </ul>
-            <div class="tab-content mt-3">
+            <div class="tab-content mt-4">
                 <div class="tab-pane fade show active" id="tabAniversariantes">
                     <ul id="aniversariantesList" class="list-group"></ul>
                 </div>
@@ -252,4 +353,5 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
