@@ -155,6 +155,16 @@
             /* cor do texto em destaque */
         }
 
+        .feroje {
+            background-color: #05afaf;
+            /* cor suave para destaque */
+            font-weight: bold;
+            color: #fcfcfc;
+            /* cor do texto em destaque */
+        }
+
+
+
         /* ================================
        AJUSTES PARA DEIXAR A TABELA COM ABAS MAIS COMPACTA
        ================================ */
@@ -200,19 +210,39 @@
         </div>
         <div class="menu-buttons">
             <button class="btn btn-custom"
-                onclick="window.location.href='https://docs.google.com/forms/d/e/1FAIpQLSeq-lALEzem1qXk07OHUT_eikIEHPvTC4UOyZoKfejA-C4cog/viewform'">De
+                onclick="openFullPopup('https://docs.google.com/forms/d/e/1FAIpQLSeq-lALEzem1qXk07OHUT_eikIEHPvTC4UOyZoKfejA-C4cog/viewform')">De
                 olho na frota</button>
+
             <button class="btn btn-custom"
-                onclick="window.location.href='https://www.princesadoeste.com.br/cardapio-2/'">Cardápio</button>
+                onclick="openFullPopup('https://www.princesadoeste.com.br/cardapio-2/')">Cardápio</button>
+
             <button class="btn btn-custom"
-                onclick="window.location.href='https://www.marcosoft.com.br/rhonline/login.php'">Holerite</button>
+                onclick="openFullPopup('https://www.marcosoft.com.br/rhonline/login.php')">Holerite</button>
+
             <button class="btn btn-custom"
-                onclick="window.location.href='https://docs.google.com/spreadsheets/d/e/2PACX-1vT_UEC2tnycFafWJc7mtJ8ZXHNj0bPbymqteWHh_eYpowMzHY_lCsZmkoWIgcr9LxONNrUGRIYzDp1W/pubhtml'">Ramais</button>
+                onclick="openFullPopup('https://docs.google.com/spreadsheets/d/e/2PACX-1vT_UEC2tnycFafWJc7mtJ8ZXHNj0bPbymqteWHh_eYpowMzHY_lCsZmkoWIgcr9LxONNrUGRIYzDp1W/pubhtml')">Ramais</button>
+
             <button class="btn btn-custom"
-                onclick="window.location.href='https://www.princesadoeste.com.br/'">Instituição</button>
-            <button class="btn login-button" onclick="location.href='login.html'">RH</button>
+                onclick="openFullPopup('https://www.princesadoeste.com.br/')">Instituição</button>
+
+            <button class="btn login-button" onclick="openFullPopup('login.html', 1000, 100)">RH</button>
         </div>
     </div>
+
+    <script>
+        function openFullPopup(url, width, height) {
+            width = width || screen.width;
+            height = height || screen.height;
+            const left = (screen.width - width) / 2;
+            const top = (screen.height - height) / 2;
+
+            window.open(
+                url,
+                "_blank",
+                `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
+            );
+        }
+    </script>
 
     <div>
         <h1>Portal de Comunicação</h1>
@@ -323,6 +353,14 @@
                     }
                 });
 
+                // *** AQUI: verifica se não encontrou aniversariantes no mês atual, mas há dados na tabela
+                if (aniversariantesHoje.length === 0 && aniversariantesOutros.length === 0) {
+                    // Adiciona mensagem avisando que não há datas programadas para o mês atual
+                    lista.innerHTML = `<li class="list-group-item">${mensagem}</li>`; // mensagem passada na chamada da função
+                    return;  // sai da função para não executar o restante
+                }
+
+
                 // Inserir aniversariantes de hoje primeiro
                 // Ordena aniversariantes restantes a partir do dia de hoje
                 aniversariantesOutros.sort((a, b) => {
@@ -410,10 +448,85 @@
                 console.error("Erro ao carregar eventos:", error.message);
             }
         }
+        async function carregarFeriados() {
+            try {
+                const { data, error } = await supabase.from('feriados').select();
+                if (error) throw error;
+
+                const lista = document.getElementById('feriadosList');
+                lista.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    lista.innerHTML = '<li class="list-group-item">NENHUM FERIADO CADASTRADO.</li>';
+                    return;
+                }
+
+                // Ordenar os feriados por data crescente, usando data local para evitar erro de fuso
+                data.sort((a, b) => {
+                    const [anoA, mesA, diaA] = a.data.split('T')[0].split('-');
+                    const [anoB, mesB, diaB] = b.data.split('T')[0].split('-');
+                    const dA = new Date(Number(anoA), Number(mesA) - 1, Number(diaA));
+                    const dB = new Date(Number(anoB), Number(mesB) - 1, Number(diaB));
+                    return dA - dB;
+                });
+
+                const hoje = new Date();
+                const anoAtual = hoje.getFullYear();
+                const hojeDiaMes = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+                // Filtrar feriados que pertencem ao ano atual, criando data local
+                const feriadosDoAno = data.filter(({ data }) => {
+                    try {
+                        const [ano, mes, dia] = data.split('T')[0].split('-');
+                        const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
+                        return !isNaN(d) && d.getFullYear() === anoAtual;
+                    } catch {
+                        return false;
+                    }
+                });
+
+                // Se não houver feriados no ano atual, mostra mensagem e retorna
+                if (feriadosDoAno.length === 0) {
+                    lista.innerHTML = '<li class="list-group-item" style="color: red; font-weight: bold;">NÃO HÁ FERIADOS PROGRAMADOS PARA ESTE ANO.</li>';
+                    return;
+                }
+
+                // Exibe todos os feriados do ano atual, formatando data local e destacando feriado de hoje
+                feriadosDoAno.forEach(({ nome, data }) => {
+                    try {
+                        const [ano, mes, dia] = data.split('T')[0].split('-');
+                        const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
+                        if (!isNaN(d)) {
+                            const dataFormatada = d.toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric'
+                            }).toUpperCase();
+                            const nomeUpper = nome.toUpperCase();
+
+                            // Verifica se é feriado de hoje (somente dia e mês)
+                            const feriadoDiaMes = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                            const classeHoje = (feriadoDiaMes === hojeDiaMes) ? 'aniversariante-hoje' : '';
+
+                            const item = `<li class="list-group-item ${classeHoje}">${dataFormatada} - ${nomeUpper}</li>`;
+                            lista.innerHTML += item;
+                        }
+                    } catch (e) {
+                        console.error("Erro ao formatar data:", e);
+                    }
+                });
+
+            } catch (e) {
+                console.error("Erro ao carregar feriados:", e.message);
+            }
+        }
+
+
+
 
         window.addEventListener('DOMContentLoaded', () => {
             carregarDados('aniversariantes', 'aniversariantesList', 'Nenhum aniversariante encontrado.');
-            carregarDados('feriados', 'feriadosList', 'Nenhum feriado cadastrado.');
+            carregarFeriados(); // nova função dedicada
             carregarDados('cestas', 'cestasList', 'Nenhuma data disponível.');
             carregarEventos();
         });
