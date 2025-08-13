@@ -199,6 +199,16 @@
             margin-right: 9px;
             /* Espaçamento menor entre as abas */
         }
+
+        .notification-bell {
+            transition: transform 0.3s ease;
+        }
+
+        .notification-bell.active {
+            transform: scale(1.2);
+            color: #ff0000;
+            /* Muda a cor para vermelho quando ativo */
+        }
     </style>
 </head>
 
@@ -215,9 +225,10 @@
 
             <button class="btn btn-custom"
                 onclick="openFullPopup('https://www.princesadoeste.com.br/cardapio-2/')">Cardápio</button>
-              
+
             <button class="btn btn-custom"
-                onclick="openFullPopup('https://docs.google.com/forms/d/e/1FAIpQLSdUuW5hLumiwHzx3Jv08rdInQYVu5Izk2izRA_lmTaYqFua3A/viewform?pli=1&fbzx=4226691298702882557/')">Peça seu Lanche</button>
+                onclick="openFullPopup('https://docs.google.com/forms/d/e/1FAIpQLSdUuW5hLumiwHzx3Jv08rdInQYVu5Izk2izRA_lmTaYqFua3A/viewform?pli=1&fbzx=4226691298702882557/')">Peça
+                seu Lanche</button>
 
 
             <button class="btn btn-custom"
@@ -254,7 +265,10 @@
 
     <div class="container-flex mt-4">
         <div class="col" id="eventosContainer">
-            <h2>Eventos</h2>
+            <h2>
+                <span id="notificationBell" class="notification-bell" style="color: red;">🔔</span>
+                Eventos
+            </h2>
             <div id="carouselEventos" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner" id="carouselInner">
                     <div class="carousel-item active">
@@ -403,7 +417,7 @@
                 console.error("Erro ao carregar dados:", e.message);
             }
         }
-
+        let hasNewEvent = false; // Variável para rastrear novos eventos
         async function carregarEventos() {
             try {
                 const { data, error } = await supabase.from('eventos').select();
@@ -414,14 +428,17 @@
 
                 if (!data || data.length === 0) {
                     carouselInner.innerHTML = `
-                        <div class="carousel-item active">
-                            <img src="https://via.placeholder.com/800x400" class="d-block w-100" alt="Evento Placeholder">
-                            <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0, 0, 128, 0.8); position: absolute; bottom: 0; width: 100%; padding: 10px;">
-                                <h5>Sem eventos no momento</h5>
-                            </div>
-                        </div>`;
+                <div class="carousel-item active">
+                    <img src="https://via.placeholder.com/800x400" class="d-block w-100" alt="Evento Placeholder">
+                    <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0, 0, 128, 0.8); position: absolute; bottom: 0; width: 100%; padding: 10px;">
+                        <h5>Sem eventos no momento</h5>
+                    </div>
+                </div>`;
                     return;
                 }
+
+                // Inverter a ordem para LIFO
+                data.reverse();
 
                 data.forEach(({ imagem_url, nome, data }, index) => {
                     let formattedDate = 'Data não disponível';
@@ -439,13 +456,13 @@
 
                     const activeClass = index === 0 ? 'active' : '';
                     const item = `
-                        <div class="carousel-item ${activeClass}">
-                            <img src="${imagem_url || 'https://via.placeholder.com/800x400'}" class="d-block w-100" alt="${nome}">
-                            <div class="carousel-caption d-none d-md-block">
-                                <h5>${nome}</h5>
-                                <p>${formattedDate}</p>
-                            </div>
-                        </div>`;
+                <div class="carousel-item ${activeClass}">
+                    <img src="${imagem_url || 'https://via.placeholder.com/800x400'}" class="d-block w-100" alt="${nome}">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h5>${nome}</h5>
+                        <p>${formattedDate}</p>
+                    </div>
+                </div>`;
                     carouselInner.insertAdjacentHTML('beforeend', item);
                 });
             } catch (error) {
@@ -524,9 +541,6 @@
                 console.error("Erro ao carregar feriados:", e.message);
             }
         }
-
-
-
 
         window.addEventListener('DOMContentLoaded', () => {
             carregarDados('aniversariantes', 'aniversariantesList', 'Nenhum aniversariante encontrado.');
