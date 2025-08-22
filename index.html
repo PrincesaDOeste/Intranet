@@ -9,12 +9,44 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
     <style>
         body {
             background-color: #ffffff;
             color: #0d0f96;
         }
+
+        /* Força proporção igual em qualquer monitor */
+        .main-wrapper {
+            max-width: 2400px;
+            /* largura máxima fixa */
+            aspect-ratio: 15 / 10;
+            /* mantém proporção da tela */
+            margin: 0 auto;
+            /* centraliza horizontalmente */
+            background-color: white;
+            /* fundo opcional */
+            padding: 1px;
+            box-sizing: border-box;
+        }
+
+        /* Garante que conteúdo interno se ajuste */
+        .main-wrapper>* {
+            max-width: 100%;
+            max-height: 30%;
+
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+
 
         .btn-custom {
             background-color: #05afaf;
@@ -32,14 +64,14 @@
         }
 
         .carousel-item img {
-            max-height: 600px;
+            max-height: 500px;
             /* Aumentado de 500px */
             object-fit: cover;
             border-radius: 10px;
         }
 
         .carousel-container {
-            padding: 15px;
+            padding: 50px;
         }
 
         h1 {
@@ -53,14 +85,18 @@
             /* Define a fonte como Arial */
         }
 
-        h2 {
-            color: #022cb6;
+        .Eventos {
+            color: #0f1e6e;
+            padding: 7px;
             text-align: left;
-            font-size: 18px;
+            padding: 7px;
+            font-size: 20px;
             font-family: Arial, sans-serif;
             /* Define a fonte como Arial */
-            font-weight: bold;
+
         }
+
+
 
         .nav-link.active {
             background-color: #031852;
@@ -139,15 +175,23 @@
             font-weight: bold;
         }
 
-
-        #aniversariantesList {
+        .tab-list {
             display: flex;
-            height: 339px;
+            flex-direction: column;
+            height: 100%px;
             /* Altura fixa igual ao carrossel */
             overflow-y: auto;
+            /* Rolagem vertical */
             border: 1px solid #ddd;
             border-radius: 5px;
+            padding: 0.5rem;
+            /* Opcional: espaçamento interno */
+            background-color: #fff;
+            /* Opcional: fundo branco */
+            border-radius: 0.50rem;
+            max-width: 970px;
         }
+
 
 
         .aniversariante-hoje {
@@ -169,19 +213,52 @@
 
 
         /* ================================
-       AJUSTES PARA DEIXAR A TABELA COM ABAS MAIS COMPACTA
-       ================================ */
-
+        AJUSTES PARA DEIXAR A TABELA COM ABAS MAIS COMPACTA
+        ================================ */
         .col {
             max-width: 970px;
             /* Limita a largura da coluna onde estão as abas */
             font-size: 0.9rem;
             /* Diminui o tamanho da fonte no conteúdo */
+            margin: 0 auto;
+            /* Centraliza horizontalmente */
+        }
+
+        .tab-list-container {
+            display: flex;
+            flex-direction: column;
+            height: auto;
+            /* independente, ajusta à altura do conteúdo */
+            max-width: 970px;
+            /* mesma largura da coluna */
+            margin: 0 auto;
+            /* centraliza horizontalmente */
+            box-sizing: border-box;
+            /* garante que padding não altere a largura */
         }
 
         .tab-content {
-            margin-top: 5px;
-            /* Reduz o espaçamento entre as abas e o conteúdo */
+            height: 47%;
+            /* ocupa toda altura do container pai */
+            overflow-y: auto;
+            /* caso o conteúdo seja maior que a altura */
+        }
+
+        .tab-list-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 970px;
+            /* largura igual à coluna */
+            margin: 0 auto;
+            /* centraliza horizontalmente */
+            height: auto;
+            /* altura vai ser ajustada via JS */
+            box-sizing: border-box;
+        }
+
+        .tab-content {
+            overflow-y: auto;
+            /* caso conteúdo ultrapasse a altura */
         }
 
         .list-group-item {
@@ -220,397 +297,660 @@
             display: none;
             /* Inicialmente escondida */
         }
+
+
+
+        /* ================================
+        Container principal do formulário de busca
+        ================================ */
+        /*  */
+        .busca-ramais-container {
+            background-color: #ffffffe8;
+
+            max-width: 970px;
+            width: 100%;
+            /* garante que se adapte mas não ultrapasse */
+            height: 35%px;
+            /* altura fixa */
+
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(196, 72, 72, 0.1);
+            padding: 1rem;
+
+            margin: 0 auto;
+            /* centraliza horizontalmente */
+            margin-top: 1rem;
+            /* distância fixa do topo */
+
+            overflow: hidden;
+            border: 0.1px solid #ccc;
+
+            position: relative;
+            /* mantém na estrutura */
+        }
+
+        .busca-ramais-container {
+            color: #0f1e6e;
+            padding: 12px;
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+            /* Define a fonte como Arial */
+
+        }
+
+
+        #resultsContainer {
+            border-radius: 0.1rem;
+            /* mesmo do container */
+            border: 0.1px solid #084aad;
+            font-weight: bold;
+
+        }
+
+        /* Título e descrição */
+        .busca-ramais-container .text-center h1 {
+            font-size: 1rem;
+            /* Reduzido de 1.25rem */
+            margin-bottom: 0.5rem;
+            /* Reduzido de 0.5rem */
+        }
+
+        .busca-ramais-container .text-center p {
+            margin-top: 0.15rem;
+            /* Reduzido de 0.25rem */
+        }
+
+        /* Input de pesquisa */
+        .busca-ramais-container input#searchInput {
+            width: 100%;
+            padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+            /* Espaço para ícone */
+            border: 1px solid #e1e2e4;
+            border-radius: 0.5rem;
+            background-color: #f9fafb;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        /* Container de resultados */
+        #resultsContainer {
+            margin-top: 0.1rem;
+            /* Reduzido de 1rem */
+            max-height: 100px;
+            /* Reduzido de 80px */
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background-color: #fff;
+            padding: 0.10rem;
+            /* Reduzido de 0.5rem */
+        }
+
+        /* Rodapé do formulário */
+        .busca-ramais-container .text-sm p {
+            margin-top: 0rem;
+            /* Reduzido de 1rem */
+        }
+
+
+
+        .employee-name {
+            font-weight: bold;
+            color: #1e40af;
+            /* text-blue-800 */
+        }
+
+        .employee-info {
+            margin-top: 1rem;
+            /* mt-1 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 1px;
+        }
+
+        .employee-department {
+            color: #374151;
+            /* text-gray-700 */
+        }
+
+        .employee-email {
+            color: #374151;
+            /* text-gray-700 */
+        }
+
+        .employee-department-value {
+            font-weight: 200;
+            /* font-medium */
+        }
+
+        .employee-extension {
+            background-color: #dbeafe;
+            /* bg-blue-100 */
+            color: #1e40af;
+            /* text-blue-800 */
+            padding: 0.25rem 0.75rem;
+            /* py-1 px-3 */
+            border-radius: 999px;
+            /* rounded-full */
+            font-weight: 600;
+            /* font-semibold */
+            font-size: 0.875rem;
+            /* text-sm */
+
+
+        }
     </style>
 </head>
 
 <body class="p-4">
-    <div class="container-flex mt-4">
-        <div class="logo-container">
-            <img src="https://www.princesadoeste.com.br/wp-content/uploads/2019/01/LogoPrincesaDoeste389.png"
-                alt="Logo Viação Princesa do Oeste">
+
+    <div class="main-wrapper">
+        <div class="container-flex mt-4">
+            <div class="logo-container">
+                <img src="https://www.princesadoeste.com.br/wp-content/uploads/2019/01/LogoPrincesaDoeste389.png"
+                    alt="Logo Viação Princesa do Oeste">
+            </div>
+            <div class="menu-buttons">
+                <button class="btn btn-custom"
+                    onclick="openFullPopup('https://docs.google.com/forms/d/e/1FAIpQLSeq-lALEzem1qXk07OHUT_eikIEHPvTC4UOyZoKfejA-C4cog/viewform')">De
+                    olho na frota</button>
+
+                <button class="btn btn-custom"
+                    onclick="openFullPopup('https://www.princesadoeste.com.br/cardapio-2/')">Cardápio</button>
+
+                <button class="btn btn-custom"
+                    onclick="openFullPopup('https://docs.google.com/forms/d/e/1FAIpQLSdUuW5hLumiwHzx3Jv08rdInQYVu5Izk2izRA_lmTaYqFua3A/viewform?pli=1&fbzx=4226691298702882557/')">Peça
+                    seu Lanche</button>
+
+
+                <button class="btn btn-custom"
+                    onclick="openFullPopup('https://www.marcosoft.com.br/rhonline/login.php')">Holerite</button>
+
+                <button class="btn btn-custom"
+                    onclick="openFullPopup('https://www.princesadoeste.com.br/')">Instituição</button>
+
+                <button class="btn login-button" onclick="openFullPopup('login.html', 1000, 100)">Painel</button>
+            </div>
         </div>
-        <div class="menu-buttons">
-            <button class="btn btn-custom"
-                onclick="openFullPopup('https://docs.google.com/forms/d/e/1FAIpQLSeq-lALEzem1qXk07OHUT_eikIEHPvTC4UOyZoKfejA-C4cog/viewform')">De
-                olho na frota</button>
 
-            <button class="btn btn-custom"
-                onclick="openFullPopup('https://www.princesadoeste.com.br/cardapio-2/')">Cardápio</button>
+        <script>
+            function openFullPopup(url, width, height) {
+                width = width || screen.width;
+                height = height || screen.height;
+                const left = (screen.width - width) / 2;
+                const top = (screen.height - height) / 2;
 
-            <button class="btn btn-custom"
-                onclick="openFullPopup('https://docs.google.com/forms/d/e/1FAIpQLSdUuW5hLumiwHzx3Jv08rdInQYVu5Izk2izRA_lmTaYqFua3A/viewform?pli=1&fbzx=4226691298702882557/')">Peça
-                seu Lanche</button>
+                window.open(
+                    url,
+                    "_blank",
+                    `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
+                );
+            }
+        </script>
 
-
-            <button class="btn btn-custom"
-                onclick="openFullPopup('https://www.marcosoft.com.br/rhonline/login.php')">Holerite</button>
-
-            <button class="btn btn-custom"
-                onclick="openFullPopup('https://docs.google.com/spreadsheets/d/e/2PACX-1vT_UEC2tnycFafWJc7mtJ8ZXHNj0bPbymqteWHh_eYpowMzHY_lCsZmkoWIgcr9LxONNrUGRIYzDp1W/pubhtml')">Ramais</button>
-
-            <button class="btn btn-custom"
-                onclick="openFullPopup('https://www.princesadoeste.com.br/')">Instituição</button>
-
-            <button class="btn login-button" onclick="openFullPopup('login.html', 1000, 100)">RH</button>
+        <div>
+            <h1>Portal de Comunicação</h1>
         </div>
-    </div>
 
-    <script>
-        function openFullPopup(url, width, height) {
-            width = width || screen.width;
-            height = height || screen.height;
-            const left = (screen.width - width) / 2;
-            const top = (screen.height - height) / 2;
+        <div class="container-flex mt-4">
+            <div class="col" id="eventosContainer">
+                <h2 class="Eventos">
+                    Eventos
+                    <span id="notificationBell" class="notification-bell" style="position: relative;"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Novos eventos disponíveis!">
+                        🔔
+                        <span id="notificationDot" class="notification-dot" style="display: none;"></span>
+                    </span>
 
-            window.open(
-                url,
-                "_blank",
-                `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
-            );
-        }
-    </script>
+                </h2>
 
-    <div>
-        <h1>Portal de Comunicação</h1>
-    </div>
+                <div id="carouselEventos" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner" id="carouselInner">
+                        <div class="carousel-item active">
+                            <img src="https://via.placeholder.com/800x400" class="d-block w-100"
+                                alt="Evento Placeholder">
+                            <div class="carousel-caption d-none d-md-block">
+                                <h5>Evento de exemplo</h5>
 
-    <div class="container-flex mt-4">
-        <div class="col" id="eventosContainer">
-            <h2>
-                Eventos
-                <span id="notificationBell" class="notification-bell" style="position: relative;"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Novos eventos disponíveis!">
-                    🔔
-                    <span id="notificationDot" class="notification-dot" style="display: none;"></span>
-                </span>
-
-            </h2>
-
-            <div id="carouselEventos" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner" id="carouselInner">
-                    <div class="carousel-item active">
-                        <img src="https://via.placeholder.com/800x400" class="d-block w-100" alt="Evento Placeholder">
-                        <div class="carousel-caption d-none d-md-block">
-                            <h5>Evento de exemplo</h5>
-                            <p>Descrição do evento.</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselEventos"
-                    data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Anterior</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselEventos"
-                    data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Próximo</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="col">
-            <ul class="nav nav-tabs" id="tabData">
-
-
-                <li class="nav-item">
-                    <a class="nav-link active" id="aniversariantes-tab" data-bs-toggle="tab"
-                        href="#tabAniversariantes">Aniversariantes</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="feriados-tab" data-bs-toggle="tab" href="#tabFeriados">Feriados</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="cestas-tab" data-bs-toggle="tab" href="#tabCestas">Datas de retirada da
-                        cesta</a>
-                </li>
-            </ul>
-            <div class="tab-content mt-4">
-                <div class="tab-pane fade show active" id="tabAniversariantes">
-                    <ul id="aniversariantesList" class="list-group"></ul>
-                </div>
-                <div class="tab-pane fade" id="tabFeriados">
-                    <ul id="feriadosList" class="list-group"></ul>
-                </div>
-                <div class="tab-pane fade" id="tabCestas">
-                    <ul id="cestasList" class="list-group"></ul>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselEventos"
+                        data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselEventos"
+                        data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Próximo</span>
+                    </button>
                 </div>
             </div>
-        </div>
-    </div>
+            <div class="col">
+                <!-- Abas -->
+                <ul class="nav nav-tabs" id="tabData">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="aniversariantes-tab" data-bs-toggle="tab"
+                            href="#tabAniversariantes">Aniversariantes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="feriados-tab" data-bs-toggle="tab" href="#tabFeriados">Feriados</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="cestas-tab" data-bs-toggle="tab" href="#tabCestas">Datas de retirada da
+                            cesta</a>
+                    </li>
+                </ul>
 
-    <script>
-        const supabaseUrl = 'https://woywqncdfuyworcbjjlv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXdxbmNkZnV5d29yY2Jqamx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMTUyNzgsImV4cCI6MjA2MDU5MTI3OH0.o63pZx8l8oe1aEYKEaYVQyHgEvR5FGkfAygTLTvWWVA';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                <div class="tab-content mt-4">
+                    <div class="tab-pane fade show active" id="tabAniversariantes">
+                        <ul id="aniversariantesList" class="list-group tab-list"></ul>
+                    </div>
+                    <div class="tab-pane fade" id="tabFeriados">
+                        <ul id="feriadosList" class="list-group tab-list"></ul>
+                    </div>
+                    <div class="tab-pane fade" id="tabCestas">
+                        <ul id="cestasList" class="list-group tab-list"></ul>
+                    </div>
+                </div>
 
-        async function carregarDados(tabela, listaId, mensagem) {
-            try {
-                const { data, error } = await supabase.from(tabela).select();
-                if (error) throw error;
+                <div class="busca-ramais-container">
+                    <div class="text-center mb-6">
+                        <h1>Busca de Ramais</h1>
 
-                const lista = document.getElementById(listaId);
-                lista.innerHTML = '';
+                    </div>
 
-                if (!data || data.length === 0) {
-                    lista.innerHTML = `<li class="list-group-item">${mensagem}</li>`;
-                    return;
-                }
+                    <div class="w-full max-w-md mx-auto">
+                        <!-- Campo de pesquisa -->
+                        <label for="searchInput" class="sr-only">Digite o nome do colaborador para ver o ramal.</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <!-- Ícone de pesquisa -->
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+                                </svg>
+                            </div>
+                            <input type="text" id="searchInput"
+                                class="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Digite o nome do colaborador" autocomplete="off">
+                        </div>
 
-                const hoje = new Date();
-                const mesAtual = hoje.getMonth();  // 0-11
-                const anoAtual = hoje.getFullYear();
+                        <!-- Resultados da pesquisa -->
+                        <div id="resultsContainer"
+                            class="hidden mt-2 bg-white shadow rounded-lg divide-y divide-gray-200"></div>
+                        <div id="noResults" class="hidden mt-2 text-red-500 text-sm">Nenhum colaborador encontrado com
+                            esse nome.</div>
+
+                        <!-- Informação adicional -->
+                        <p class="mt-6 pt-4 border-t border-gray-200 text-sm text-gray-500">
+                            Obs.: Capturar ligação de outro ramal - # 5 número ramal *
+
+                    </div>
+                    <script>
+                        const supabaseUrl = 'https://woywqncdfuyworcbjjlv.supabase.co';
+                        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXdxbmNkZnV5d29yY2Jqamx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMTUyNzgsImV4cCI6MjA2MDU5MTI3OH0.o63pZx8l8oe1aEYKEaYVQyHgEvR5FGkfAygTLTvWWVA';
+                        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+                        async function carregarDados(tabela, listaId, mensagem) {
+                            try {
+                                // CORREÇÃO RAMAIS: se tabela for "ramais", use "employees"
+                                const tableName = tabela === 'ramais' ? 'employees' : tabela;
+                                const { data, error } = await supabase.from(tableName).select();
+                                if (error) throw error;
+
+                                const lista = document.getElementById(listaId);
+                                lista.innerHTML = '';
+
+                                if (!data || data.length === 0) {
+                                    lista.innerHTML = `<li class="list-group-item">${mensagem}</li>`;
+                                    return;
+                                }
+
+                                // Se for ramais, renderiza de forma diferente
+                                if (tabela === 'ramais') {
+                                    data.forEach(item => {
+                                        const li = document.createElement('li');
+                                        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+
+                                        // Agora mostrando também o email
+                                        li.textContent = `${item.nome || item.name} - ${item.ramal || item.extension} - ${item.setor || item.department} - ${item.email}`;
+
+                                        const btn = document.createElement('button');
+                                        btn.className = 'btn btn-danger btn-sm';
+                                        btn.textContent = 'Remover';
+                                        btn.onclick = () => removerDados(tableName, item.id);
+
+                                        li.appendChild(btn);
+                                        lista.appendChild(li);
+                                    });
+                                    return;
+                                }
 
 
-                const hojeDiaMes = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                                const hoje = new Date();
+                                const mesAtual = hoje.getMonth();
+                                const anoAtual = hoje.getFullYear();
+                                const hojeDiaMes = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 
-                const aniversariantesHoje = [];
-                const aniversariantesOutros = [];
+                                const aniversariantesHoje = [];
+                                const aniversariantesOutros = [];
 
-                data.forEach(({ nome, data }) => {
-                    try {
-                        const [ano, mes, dia] = data.split('T')[0].split('-');
-                        const parsedDate = new Date(ano, mes - 1, dia);
+                                data.forEach(({ nome, data }) => {
+                                    try {
+                                        const [ano, mes, dia] = data.split('T')[0].split('-');
+                                        const parsedDate = new Date(ano, mes - 1, dia);
 
-                        if (!isNaN(parsedDate) && parsedDate.getMonth() === mesAtual) {
-                            const diaMes = parsedDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-                            const classeExtra = diaMes === hojeDiaMes ? 'aniversariante-hoje' : '';
-                            const item = `<li class="list-group-item ${classeExtra}">${nome} - ${diaMes}</li>`;
+                                        if (!isNaN(parsedDate) && parsedDate.getMonth() === mesAtual) {
+                                            const diaMes = parsedDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                                            const classeExtra = diaMes === hojeDiaMes ? 'aniversariante-hoje' : '';
+                                            const item = `<li class="list-group-item ${classeExtra}">${nome} - ${diaMes}</li>`;
 
-                            if (diaMes === hojeDiaMes) {
-                                aniversariantesHoje.push(item);  // coloca no topo
-                            } else {
-                                aniversariantesOutros.push(item);
+                                            if (diaMes === hojeDiaMes) {
+                                                aniversariantesHoje.push(item);
+                                            } else {
+                                                aniversariantesOutros.push(item);
+                                            }
+                                        }
+                                    } catch (e) {
+                                        console.error("Erro ao converter data:", e);
+                                    }
+                                });
+
+                                if (aniversariantesHoje.length === 0 && aniversariantesOutros.length === 0) {
+                                    lista.innerHTML = `<li class="list-group-item">${mensagem}</li>`;
+                                    return;
+                                }
+
+                                aniversariantesOutros.sort((a, b) => {
+                                    const hoje = new Date();
+                                    const ano = hoje.getFullYear();
+                                    const mesAtual = hoje.getMonth();
+                                    const diaHoje = hoje.getDate();
+
+                                    const getData = str => {
+                                        const match = str.match(/(\d{2})\/(\d{2})/);
+                                        if (!match) return new Date(9999, 11, 31);
+                                        const [_, dia, mes] = match;
+                                        return new Date(ano, parseInt(mes) - 1, parseInt(dia));
+                                    };
+
+                                    const dataA = getData(a);
+                                    const dataB = getData(b);
+
+                                    const diffA = (dataA.getMonth() < mesAtual || (dataA.getMonth() === mesAtual && dataA.getDate() < diaHoje))
+                                        ? dataA.getTime() + 365 * 24 * 60 * 60 * 1000
+                                        : dataA.getTime();
+
+                                    const diffB = (dataB.getMonth() < mesAtual || (dataB.getMonth() === mesAtual && dataB.getDate() < diaHoje))
+                                        ? dataB.getTime() + 365 * 24 * 60 * 60 * 1000
+                                        : dataB.getTime();
+
+                                    return diffA - diffB;
+                                });
+
+                                [...aniversariantesHoje, ...aniversariantesOutros].forEach(item => {
+                                    lista.insertAdjacentHTML('beforeend', item);
+                                });
+
+                            } catch (e) {
+                                console.error("Erro ao carregar dados:", e.message);
+                            }
+                        } let hasNewEvent = false; // Variável para rastrear novos eventos
+
+                        async function carregarEventos() {
+                            try {
+                                const { data, error } = await supabase.from('eventos').select();
+                                if (error) throw error;
+
+                                const carouselInner = document.getElementById('carouselInner');
+                                carouselInner.innerHTML = '';
+
+                                if (!data || data.length === 0) {
+                                    carouselInner.innerHTML = `
+                    <div class="carousel-item active">
+                        <img src="https://via.placeholder.com/800x400" class="d-block w-100" alt="Evento Placeholder">
+                        <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0, 0, 128, 0.8); position: absolute; bottom: 0; width: 100%; padding: 10px;">
+                            <h5>Sem eventos no momento</h5>
+                        </div>
+                    </div>`;
+                                    return;
+                                }
+
+                                // Inverter a ordem para LIFO
+                                data.reverse();
+
+                                // Verifica se há eventos para o dia atual
+                                const today = new Date();
+                                const todayString = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+
+                                hasNewEvent = data.some(event => {
+                                    const eventDate = new Date(event.data);
+                                    const eventDateString = eventDate.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+                                    return eventDateString === todayString; // Compara as datas
+                                });
+
+                                data.forEach(({ imagem_url, nome, data }, index) => {
+                                    let formattedDate = 'Data não disponível';
+
+                                    if (data) {
+                                        try {
+                                            const parsedDate = new Date(data);
+                                            if (!isNaN(parsedDate)) {
+                                                formattedDate = parsedDate.toLocaleDateString('pt-BR');
+                                            }
+                                        } catch (e) {
+                                            console.error("Erro ao converter data:", e);
+                                        }
+                                    }
+
+                                    const activeClass = index === 0 ? 'active' : '';
+                                    const item = `
+                    <div class="carousel-item ${activeClass}">
+                        <img src="${imagem_url || 'https://via.placeholder.com/800x400'}" class="d-block w-100" alt="${nome}">
+                        <div class="carousel-caption d-none d-md-block">
+                    
+                        
+                        </div>
+                    </div>`;
+                                    carouselInner.insertAdjacentHTML('beforeend', item);
+                                });
+
+                                // Se houver um evento para o dia atual, ativa a notificação
+                                if (hasNewEvent) {
+                                    const dot = document.getElementById('notificationDot');
+                                    dot.style.display = 'block'; // Mostra a bolinha vermelha
+                                } else {
+                                    const dot = document.getElementById('notificationDot');
+                                    dot.style.display = 'none'; // Esconde a bolinha vermelha se não houver eventos
+                                }
+                            } catch (error) {
+                                console.error("Erro ao carregar eventos:", error.message);
                             }
                         }
-                    } catch (e) {
-                        console.error("Erro ao converter data:", e);
-                    }
-                });
 
-                // *** AQUI: verifica se não encontrou aniversariantes no mês atual, mas há dados na tabela
-                if (aniversariantesHoje.length === 0 && aniversariantesOutros.length === 0) {
-                    // Adiciona mensagem avisando que não há datas programadas para o mês atual
-                    lista.innerHTML = `<li class="list-group-item">${mensagem}</li>`; // mensagem passada na chamada da função
-                    return;  // sai da função para não executar o restante
-                }
+                        // Adiciona um evento de clique ao título "Eventos" após o DOM estar carregado
+                        document.addEventListener('DOMContentLoaded', () => {
+                            // Inicializa o tooltip
+                            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                            const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                                return new bootstrap.Tooltip(tooltipTriggerEl);
+                            });
+
+                            document.getElementById('notificationBell').addEventListener('click', () => {
+                                // Remove a notificação
+                                const dot = document.getElementById('notificationDot');
+                                dot.style.display = 'none'; // Esconde a bolinha vermelha
+                                hasNewEvent = false; // Reseta a variável
+
+                                // Exibe o primeiro evento no carrossel
+                                const carousel = new bootstrap.Carousel(document.getElementById('carouselEventos'));
+                                carousel.to(0); // Muda para o primeiro evento
+                            });
+                        });
 
 
-                // Inserir aniversariantes de hoje primeiro
-                // Ordena aniversariantes restantes a partir do dia de hoje
-                aniversariantesOutros.sort((a, b) => {
-                    const hoje = new Date();
-                    const ano = hoje.getFullYear();
-                    const mesAtual = hoje.getMonth();
-                    const diaHoje = hoje.getDate();
+                        async function carregarFeriados() {
+                            try {
+                                const { data, error } = await supabase.from('feriados').select();
+                                if (error) throw error;
 
-                    const getData = str => {
-                        const match = str.match(/(\d{2})\/(\d{2})/);
-                        if (!match) return new Date(9999, 11, 31); // fallback gigante para ordenar pro final
-                        const [_, dia, mes] = match;
-                        return new Date(ano, parseInt(mes) - 1, parseInt(dia));
-                    };
+                                const lista = document.getElementById('feriadosList');
+                                lista.innerHTML = '';
 
-                    const dataA = getData(a);
-                    const dataB = getData(b);
+                                if (!data || data.length === 0) {
+                                    lista.innerHTML = '<li class="list-group-item">NENHUM FERIADO CADASTRADO.</li>';
+                                    return;
+                                }
 
-                    const diffA = (dataA.getMonth() < mesAtual || (dataA.getMonth() === mesAtual && dataA.getDate() < diaHoje))
-                        ? dataA.getTime() + 365 * 24 * 60 * 60 * 1000
-                        : dataA.getTime();
+                                // Ordenar os feriados por data crescente, usando data local para evitar erro de fuso
+                                data.sort((a, b) => {
+                                    const [anoA, mesA, diaA] = a.data.split('T')[0].split('-');
+                                    const [anoB, mesB, diaB] = b.data.split('T')[0].split('-');
+                                    const dA = new Date(Number(anoA), Number(mesA) - 1, Number(diaA));
+                                    const dB = new Date(Number(anoB), Number(mesB) - 1, Number(diaB));
+                                    return dA - dB;
+                                });
 
-                    const diffB = (dataB.getMonth() < mesAtual || (dataB.getMonth() === mesAtual && dataB.getDate() < diaHoje))
-                        ? dataB.getTime() + 365 * 24 * 60 * 60 * 1000
-                        : dataB.getTime();
+                                const hoje = new Date();
+                                const anoAtual = hoje.getFullYear();
+                                const hojeDiaMes = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 
-                    return diffA - diffB;
-                });
+                                // Filtrar feriados que pertencem ao ano atual, criando data local
+                                const feriadosDoAno = data.filter(({ data }) => {
+                                    try {
+                                        const [ano, mes, dia] = data.split('T')[0].split('-');
+                                        const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
+                                        return !isNaN(d) && d.getFullYear() === anoAtual;
+                                    } catch {
+                                        return false;
+                                    }
+                                });
 
-                // Junta aniversariantes de hoje com os outros já ordenados
-                [...aniversariantesHoje, ...aniversariantesOutros].forEach(item => {
-                    lista.insertAdjacentHTML('beforeend', item);
-                });
+                                // Se não houver feriados no ano atual, mostra mensagem e retorna
+                                if (feriadosDoAno.length === 0) {
+                                    lista.innerHTML = '<li class="list-group-item" style="color: red; font-weight: bold;">NÃO HÁ FERIADOS PROGRAMADOS PARA ESTE ANO.</li>';
+                                    return;
+                                }
 
-            } catch (e) {
-                console.error("Erro ao carregar dados:", e.message);
-            }
-        }
-        let hasNewEvent = false; // Variável para rastrear novos eventos
+                                // Exibe todos os feriados do ano atual, formatando data local e destacando feriado de hoje
+                                feriadosDoAno.forEach(({ nome, data }) => {
+                                    try {
+                                        const [ano, mes, dia] = data.split('T')[0].split('-');
+                                        const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
+                                        if (!isNaN(d)) {
+                                            const dataFormatada = d.toLocaleDateString('pt-BR', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric'
+                                            }).toUpperCase();
+                                            const nomeUpper = nome.toUpperCase();
 
-        async function carregarEventos() {
-            try {
-                const { data, error } = await supabase.from('eventos').select();
-                if (error) throw error;
+                                            // Verifica se é feriado de hoje (somente dia e mês)
+                                            const feriadoDiaMes = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                                            const classeHoje = (feriadoDiaMes === hojeDiaMes) ? 'aniversariante-hoje' : '';
 
-                const carouselInner = document.getElementById('carouselInner');
-                carouselInner.innerHTML = '';
+                                            const item = `<li class="list-group-item ${classeHoje}">${dataFormatada} - ${nomeUpper}</li>`;
+                                            lista.innerHTML += item;
+                                        }
+                                    } catch (e) {
+                                        console.error("Erro ao formatar data:", e);
+                                    }
+                                });
 
-                if (!data || data.length === 0) {
-                    carouselInner.innerHTML = `
-                <div class="carousel-item active">
-                    <img src="https://via.placeholder.com/800x400" class="d-block w-100" alt="Evento Placeholder">
-                    <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0, 0, 128, 0.8); position: absolute; bottom: 0; width: 100%; padding: 10px;">
-                        <h5>Sem eventos no momento</h5>
-                    </div>
-                </div>`;
-                    return;
-                }
-
-                // Inverter a ordem para LIFO
-                data.reverse();
-
-                // Verifica se há eventos para o dia atual
-                const today = new Date();
-                const todayString = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-
-                hasNewEvent = data.some(event => {
-                    const eventDate = new Date(event.data);
-                    const eventDateString = eventDate.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-                    return eventDateString === todayString; // Compara as datas
-                });
-
-                data.forEach(({ imagem_url, nome, data }, index) => {
-                    let formattedDate = 'Data não disponível';
-
-                    if (data) {
-                        try {
-                            const parsedDate = new Date(data);
-                            if (!isNaN(parsedDate)) {
-                                formattedDate = parsedDate.toLocaleDateString('pt-BR');
+                            } catch (e) {
+                                console.error("Erro ao carregar feriados:", e.message);
                             }
-                        } catch (e) {
-                            console.error("Erro ao converter data:", e);
                         }
-                    }
+                        // Elementos do formulário
+                        const searchInput = document.getElementById('searchInput');
+                        const resultsContainer = document.getElementById('resultsContainer');
+                        const noResults = document.getElementById('noResults');
 
-                    const activeClass = index === 0 ? 'active' : '';
-                    const item = `
-                <div class="carousel-item ${activeClass}">
-                    <img src="${imagem_url || 'https://via.placeholder.com/800x400'}" class="d-block w-100" alt="${nome}">
-                    <div class="carousel-caption d-none d-md-block">
-                        <h5>${nome}</h5>
-                        <p>${formattedDate}</p>
-                    </div>
-                </div>`;
-                    carouselInner.insertAdjacentHTML('beforeend', item);
-                });
-
-                // Se houver um evento para o dia atual, ativa a notificação
-                if (hasNewEvent) {
-                    const dot = document.getElementById('notificationDot');
-                    dot.style.display = 'block'; // Mostra a bolinha vermelha
-                } else {
-                    const dot = document.getElementById('notificationDot');
-                    dot.style.display = 'none'; // Esconde a bolinha vermelha se não houver eventos
-                }
-            } catch (error) {
-                console.error("Erro ao carregar eventos:", error.message);
-            }
-        }
-
-        // Adiciona um evento de clique ao título "Eventos" após o DOM estar carregado
-        document.addEventListener('DOMContentLoaded', () => {
-            // Inicializa o tooltip
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-
-            document.getElementById('notificationBell').addEventListener('click', () => {
-                // Remove a notificação
-                const dot = document.getElementById('notificationDot');
-                dot.style.display = 'none'; // Esconde a bolinha vermelha
-                hasNewEvent = false; // Reseta a variável
-
-                // Exibe o primeiro evento no carrossel
-                const carousel = new bootstrap.Carousel(document.getElementById('carouselEventos'));
-                carousel.to(0); // Muda para o primeiro evento
-            });
-        });
-
-
-        async function carregarFeriados() {
-            try {
-                const { data, error } = await supabase.from('feriados').select();
-                if (error) throw error;
-
-                const lista = document.getElementById('feriadosList');
-                lista.innerHTML = '';
-
-                if (!data || data.length === 0) {
-                    lista.innerHTML = '<li class="list-group-item">NENHUM FERIADO CADASTRADO.</li>';
-                    return;
-                }
-
-                // Ordenar os feriados por data crescente, usando data local para evitar erro de fuso
-                data.sort((a, b) => {
-                    const [anoA, mesA, diaA] = a.data.split('T')[0].split('-');
-                    const [anoB, mesB, diaB] = b.data.split('T')[0].split('-');
-                    const dA = new Date(Number(anoA), Number(mesA) - 1, Number(diaA));
-                    const dB = new Date(Number(anoB), Number(mesB) - 1, Number(diaB));
-                    return dA - dB;
-                });
-
-                const hoje = new Date();
-                const anoAtual = hoje.getFullYear();
-                const hojeDiaMes = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-
-                // Filtrar feriados que pertencem ao ano atual, criando data local
-                const feriadosDoAno = data.filter(({ data }) => {
-                    try {
-                        const [ano, mes, dia] = data.split('T')[0].split('-');
-                        const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
-                        return !isNaN(d) && d.getFullYear() === anoAtual;
-                    } catch {
-                        return false;
-                    }
-                });
-
-                // Se não houver feriados no ano atual, mostra mensagem e retorna
-                if (feriadosDoAno.length === 0) {
-                    lista.innerHTML = '<li class="list-group-item" style="color: red; font-weight: bold;">NÃO HÁ FERIADOS PROGRAMADOS PARA ESTE ANO.</li>';
-                    return;
-                }
-
-                // Exibe todos os feriados do ano atual, formatando data local e destacando feriado de hoje
-                feriadosDoAno.forEach(({ nome, data }) => {
-                    try {
-                        const [ano, mes, dia] = data.split('T')[0].split('-');
-                        const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
-                        if (!isNaN(d)) {
-                            const dataFormatada = d.toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric'
-                            }).toUpperCase();
-                            const nomeUpper = nome.toUpperCase();
-
-                            // Verifica se é feriado de hoje (somente dia e mês)
-                            const feriadoDiaMes = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-                            const classeHoje = (feriadoDiaMes === hojeDiaMes) ? 'aniversariante-hoje' : '';
-
-                            const item = `<li class="list-group-item ${classeHoje}">${dataFormatada} - ${nomeUpper}</li>`;
-                            lista.innerHTML += item;
+                        // Função debounce
+                        function debounce(func, delay) {
+                            let timeout;
+                            return function () {
+                                clearTimeout(timeout);
+                                timeout = setTimeout(func, delay);
+                            };
                         }
-                    } catch (e) {
-                        console.error("Erro ao formatar data:", e);
-                    }
-                });
 
-            } catch (e) {
-                console.error("Erro ao carregar feriados:", e.message);
-            }
-        }
+                        // Função de busca no Supabase
+                        const searchRamais = async () => {
+                            const searchTerm = searchInput.value.trim();
 
-        window.addEventListener('DOMContentLoaded', () => {
-            carregarDados('aniversariantes', 'aniversariantesList', 'Nenhum aniversariante encontrado.');
-            carregarFeriados(); // nova função dedicada
-            carregarDados('cestas', 'cestasList', 'Nenhuma data disponível.');
-            carregarEventos();
-        });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+                            if (searchTerm.length < 2) {
+                                resultsContainer.classList.add('hidden');
+                                noResults.classList.add('hidden');
+                                return;
+                            }
 
+                            try {
+                                const { data: employees, error } = await supabase
+                                    .from('employees')
+                                    .select('*')
+                                    .ilike('name', `%${searchTerm}%`)
+                                    .limit(5);
 
+                                if (error) throw error;
+
+                                if (employees && employees.length > 0) {
+                                    resultsContainer.innerHTML = '';
+                                    employees.forEach(employee => {
+                                        const resultItem = document.createElement('div');
+                                        resultItem.className = 'bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-lg result-fade';
+                                        resultItem.innerHTML = `
+                                        <h3 class="employee-name">${employee.name}</h3>
+                                        <div class="employee-info">
+                                            <span class="employee-department">
+                                                Setor: <span class="employee-department-value">${employee.department}</span>
+                                               
+                                            </span>
+<span class="employee-email">
+                                             Email: <span class="employee-email-value">${employee.email}</span>
+                                              </span>
+                                            <span class="employee-extension">${employee.extension}</span>
+                                            
+                                        </div>
+                        `;
+                                        resultsContainer.appendChild(resultItem);
+                                    });
+                                    resultsContainer.classList.remove('hidden');
+                                    noResults.classList.add('hidden');
+                                } else {
+                                    resultsContainer.classList.add('hidden');
+                                    noResults.classList.remove('hidden');
+                                }
+                            } catch (err) {
+                                console.error('Erro na busca de ramais:', err);
+                                noResults.textContent = 'Ocorreu um erro na busca. Tente novamente.';
+                                noResults.classList.remove('hidden');
+                            }
+                        };
+
+                        searchInput.addEventListener('input', debounce(searchRamais, 300));
+                        searchInput.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') e.preventDefault();
+                        });
+
+                        window.addEventListener('DOMContentLoaded', () => {
+                            carregarDados('aniversariantes', 'aniversariantesList', 'Nenhum aniversariante encontrado.');
+                            carregarFeriados(); // nova função dedicada
+                            carregarDados('cestas', 'cestasList', 'Nenhuma data disponível.');
+                            carregarEventos();
+                        });
+
+                    </script>
+                    <script
+                        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+
+                </div>
 </body>
 
 </html>
