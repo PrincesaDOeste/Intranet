@@ -246,15 +246,19 @@
                         carregarDados();
                     });
 
-                    async function removerDados(tipo, id) {
-                        const { error } = await supabase.from('employees').delete().eq('id', id);
-                        if (error) {
-                            alert('Erro ao remover: ' + error.message);
-                            return;
-                        }
-                        alert('Removido com sucesso!');
-                        carregarDados();
-                    }
+                 async function removerDados(tipo, id) {
+    const tableName = (tipo === 'ramais') ? 'employees' : tipo;
+    const { error } = await supabase.from(tableName).delete().eq('id', id);
+
+    if (error) {
+        alert('Erro ao remover: ' + error.message);
+        return;
+    }
+
+    alert('Removido com sucesso!');
+    carregarDados();
+}
+
 
                     tipoInput.addEventListener('change', () => {
                         const tipo = tipoInput.value;
@@ -281,3 +285,4 @@
 </body>
 
 </html>
+
