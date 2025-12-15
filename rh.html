@@ -19,6 +19,14 @@
     .search-bar {
         margin-bottom: 10px;
     }
+
+    .img-preview {
+        max-width: 90px;
+        max-height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-left: 8px;
+    }
 </style>
 
 <body class="p-4">
@@ -36,6 +44,7 @@
                             <option value="cestas">Data para Cestas</option>
                             <option value="eventos">Evento</option>
                             <option value="ramais">Ramal</option>
+                            <option value="identidade">Identidade</option>
                         </select>
                     </div>
                     <div id="infoCadastro">
@@ -49,8 +58,21 @@
                         </div>
                         <div class="mb-3" id="imagemEvento" style="display:none;">
                             <label for="imagem" class="form-label">Imagem do Evento</label>
-                            <input type="file" id="imagem" class="form-control">
+                            <input type="file" id="imagem" class="form-control" accept="image/*">
                         </div>
+
+                        <!-- Campos para IDENTIDADE (logotipo + imagem destaque) -->
+                        <div class="mb-3" id="logoIdentidade" style="display:none;">
+                            <label for="logotipo" class="form-label">Logotipo</label>
+                            <input type="file" id="logotipo" class="form-control" accept="image/*">
+                        </div>
+                        <div class="mb-3" id="imagemIdentidade" style="display:none;">
+                            <label for="imagemDestaqueIdentidade" class="form-label">Imagem de Destaque #Em
+                                produção</label>
+                            <input type="file" id="imagemDestaqueIdentidade" class="form-control" accept="image/*">
+                        </div>
+                        <!-- fim IDENTIDADE -->
+
                         <div class="mb-3" id="ramalFields" style="display:none;">
                             <label for="ramal" class="form-label">Ramal</label>
                             <input type="text" id="ramal" class="form-control">
@@ -84,6 +106,10 @@
                     <li class="nav-item">
                         <a class="nav-link" id="ramais-tab" data-bs-toggle="tab" href="#tabRamais">Ramais</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="identidade-tab" data-bs-toggle="tab"
+                            href="#tabIdentidade">Identidade</a>
+                    </li>
                 </ul>
                 <div class="tab-content mt-3">
                     <div class="tab-pane fade show active" id="tabAniversariantes">
@@ -106,6 +132,12 @@
                         <input type="text" class="form-control search-bar" placeholder="Pesquisar ramais...">
                         <ul id="ramaisList" class="list-group"></ul>
                     </div>
+
+                    <!-- Aba Identidade -->
+                    <div class="tab-pane fade" id="tabIdentidade">
+                        <input type="text" class="form-control search-bar" placeholder="Pesquisar identidade...">
+                        <ul id="identidadeList" class="list-group"></ul>
+                    </div>
                 </div>
 
                 <script>
@@ -123,7 +155,14 @@
                     const cestasList = document.getElementById('cestasList');
                     const eventosList = document.getElementById('eventosList');
                     const ramaisList = document.getElementById('ramaisList');
+                    const identidadeList = document.getElementById('identidadeList');
                     const imagemEventoDiv = document.getElementById('imagemEvento');
+
+                    // elementos identidade
+                    const logoIdentidadeDiv = document.getElementById('logoIdentidade');
+                    const imagemIdentidadeDiv = document.getElementById('imagemIdentidade');
+                    const logotipoInput = document.getElementById('logotipo');
+                    const imagemDestaqueIdentidadeInput = document.getElementById('imagemDestaqueIdentidade');
 
                     // Função de filtro
                     function filtrarLista(input) {
@@ -144,10 +183,50 @@
                         });
                     }
 
+                    // converte arquivo para dataURL (base64)
+                    function fileToDataURL(file) {
+                        return new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(file);
+                        });
+                    }
+                    function formatarDataBR(dataISO) {
+                        if (!dataISO) return '';
+                        const [ano, mes, dia] = dataISO.split('-');
+                        return `${dia}/${mes}/${ano}`;
+                    }
+
+                    window.removerDados = async function (tipo, id) {
+                        if (!confirm('Tem certeza que deseja remover este registro?')) return;
+
+                        let tableName = tipo === 'ramais' ? 'employees' : tipo;
+                        if (tipo === 'identidade') tableName = 'config_imagens_site';
+
+                        const { error } = await supabase
+                            .from(tableName)
+                            .delete()
+                            .eq('id', id);
+
+                        if (error) {
+                            console.error(error);
+                            alert('Erro ao remover registro: ' + error.message);
+                            return;
+                        }
+
+                        alert('Registro removido com sucesso!');
+                        carregarDados();
+                    };
+
+
                     async function carregarDados() {
-                        const tipos = ['aniversariantes', 'feriados', 'cestas', 'eventos', 'ramais'];
+                        const tipos = ['aniversariantes', 'feriados', 'cestas', 'eventos', 'ramais', 'identidade'];
                         for (const tipo of tipos) {
-                            const tableName = tipo === 'ramais' ? 'employees' : tipo;
+                            // mapeia nome da tabela
+                            let tableName = tipo === 'ramais' ? 'employees' : tipo;
+                            if (tipo === 'identidade') tableName = 'config_imagens_site';
+
                             const { data, error } = await supabase.from(tableName).select();
                             if (error) {
                                 console.error(`Erro ao carregar ${tipo}:`, error);
@@ -157,10 +236,11 @@
                             const list = tipo === 'aniversariantes' ? aniversariantesList :
                                 tipo === 'feriados' ? feriadosList :
                                     tipo === 'cestas' ? cestasList :
-                                        tipo === 'eventos' ? eventosList : ramaisList;
+                                        tipo === 'eventos' ? eventosList :
+                                            tipo === 'ramais' ? ramaisList : identidadeList;
 
                             list.innerHTML = '';
-                            if (data.length === 0) {
+                            if (!data || data.length === 0) {
                                 const li = document.createElement('li');
                                 li.className = 'list-group-item';
                                 li.textContent = `Nenhum dado encontrado para ${tipo}.`;
@@ -169,11 +249,38 @@
                                 data.forEach(item => {
                                     const li = document.createElement('li');
                                     li.className = 'list-group-item d-flex justify-content-between align-items-center';
+
                                     if (tipo === 'ramais') {
                                         li.textContent = `${item.name} - ${item.extension} - ${item.department} - ${item.email}`;
-                                    }
-                                    else {
-                                        li.textContent = `${item.nome} - ${item.data}`;
+                                    } else if (tipo === 'identidade') {
+                                        // item is from config_imagens_site
+                                        // item.nome, item.tipo, item.descricao, item.logotipo, item.imagem_destaque
+                                        const left = document.createElement('div');
+                                        left.innerHTML = `<strong>${item.nome || '(sem nome)'}</strong><br><small>${item.tipo || ''}</small>`;
+                                        if (item.descricao) {
+                                            left.innerHTML += `<div style="font-size:12px;color:#666;">${item.descricao}</div>`;
+                                        }
+
+                                        li.appendChild(left);
+
+                                        const imgs = document.createElement('div');
+                                        if (item.logotipo) {
+                                            const img = document.createElement('img');
+                                            img.src = item.logotipo; // já é dataURL
+                                            img.alt = 'logotipo';
+                                            img.className = 'img-preview';
+                                            imgs.appendChild(img);
+                                        }
+                                        if (item.imagem_destaque) {
+                                            const img2 = document.createElement('img');
+                                            img2.src = item.imagem_destaque;
+                                            img2.alt = 'destaque';
+                                            img2.className = 'img-preview';
+                                            imgs.appendChild(img2);
+                                        }
+                                        li.appendChild(imgs);
+                                    } else {
+                                        li.textContent = `${item.nome || ''} - ${formatarDataBR(item.data)}`;
                                         if (item.imagem_url) {
                                             const img = document.createElement('img');
                                             img.src = item.imagem_url;
@@ -183,11 +290,13 @@
                                             li.appendChild(img);
                                         }
                                     }
+
                                     const btn = document.createElement('button');
                                     btn.className = 'btn btn-danger btn-sm';
                                     btn.textContent = 'Remover';
                                     btn.onclick = () => removerDados(tipo, item.id);
                                     li.appendChild(btn);
+
                                     list.appendChild(li);
                                 });
                             }
@@ -197,36 +306,106 @@
                     cadastroForm.addEventListener('submit', async (e) => {
                         e.preventDefault();
                         const tipo = tipoInput.value;
-                        const nome = nomeInput.value;
+                        const nome = nomeInput.value.trim();
                         const data = tipo !== 'ramais' ? dataInput.value : null;
                         const imagem = tipo === 'eventos' ? imagemInput.files[0] : null;
                         const ramal = tipo === 'ramais' ? document.getElementById('ramal').value : null;
                         const setor = tipo === 'ramais' ? document.getElementById('setor').value : null;
                         const email = tipo === 'ramais' ? document.getElementById('email').value : null;
 
-                        if (!nome ||
-                            (tipo !== 'ramais' && !data) ||
-                            (tipo === 'eventos' && !imagem) ||
-                            (tipo === 'ramais' && (!ramal || !setor || !email))) {
-                            alert("Por favor, preencha todos os campos.");
+                        // Validações gerais
+                        if (!nome) {
+                            alert("Por favor, preencha o nome.");
+                            return;
+                        }
+
+                        // data é obrigatória para todos exceto ramais e identidade
+                        if (tipo !== 'ramais' && tipo !== 'identidade' && !data) {
+                            alert("Por favor, informe a data.");
+                            return;
+                        }
+
+                        // validação ramais
+                        if (tipo === 'ramais' && (!ramal || !setor || !email)) {
+                            alert("Por favor, preencha ramal, setor e e-mail.");
+                            return;
+                        }
+
+                        // validação eventos (mantive o comportamento atual: pede imagem)
+                        if (tipo === 'eventos' && !imagem) {
+                            alert("Por favor, selecione a imagem do evento.");
                             return;
                         }
 
                         let dados = {};
                         let error;
 
+                        // ===== IDENTIDADE (0, 1 ou 2 imagens aceitas) =====
+                        // ===== IDENTIDADE (0, 1 ou 2 imagens aceitas) =====
+                        if (tipo === 'identidade') {
+                            try {
+                                const logoFile = logotipoInput ? logotipoInput.files[0] : null;
+                                const destaqueFile = imagemDestaqueIdentidadeInput ? imagemDestaqueIdentidadeInput.files[0] : null;
+
+                                // função auxiliar para converter arquivo -> dataURL (base64)
+                                const convertToDataUrl = (file) => {
+                                    return new Promise((resolve, reject) => {
+                                        if (!file) return resolve(null);
+                                        const reader = new FileReader();
+                                        reader.onload = () => resolve(reader.result);
+                                        reader.onerror = reject;
+                                        reader.readAsDataURL(file);
+                                    });
+                                };
+
+                                const logoDataUrl = await convertToDataUrl(logoFile);
+                                const destaqueDataUrl = await convertToDataUrl(destaqueFile);
+
+                                ({ error } = await supabase.from('config_imagens_site').insert([{
+                                    nome: nome,
+                                    tipo: 'logo_principal',
+                                    descricao: 'Identidade cadastrada via painel',
+                                    logotipo: logoDataUrl,            // pode ser null
+                                    imagem_destaque: destaqueDataUrl, // pode ser null
+                                    atualizado_em: new Date()
+                                }]));
+
+                                if (error) {
+                                    alert('Erro ao cadastrar identidade: ' + error.message);
+                                    return;
+                                }
+
+                                alert('Identidade cadastrada com sucesso!');
+                                // limpar campos relevantes
+                                nomeInput.value = '';
+                                dataInput.value = '';
+                                if (logotipoInput) logotipoInput.value = '';
+                                if (imagemDestaqueIdentidadeInput) imagemDestaqueIdentidadeInput.value = '';
+                                carregarDados();
+                                return;
+                            } catch (err) {
+                                console.error(err);
+                                alert('Erro ao processar imagens da identidade.');
+                                return;
+                            }
+                        }
+
+
+                        // ===== RAMAIS =====
                         if (tipo === 'ramais') {
                             dados = { name: nome, extension: ramal, department: setor, email: email };
                             ({ error } = await supabase.from('employees').insert([dados]));
                         } else {
+                            // ===== EVENTOS / ANIVERSARIANTES / FERIADOS / CESTAS =====
                             let imagemUrl = '';
                             if (tipo === 'eventos' && imagem) {
+                                // mantemos upload no storage para eventos (como antes)
                                 const { data: imagemData, error: imagemError } = await supabase.storage.from('eventos').upload(imagem.name, imagem);
                                 if (imagemError) {
                                     alert('Erro ao fazer upload da imagem: ' + imagemError.message);
                                     return;
                                 }
-                                imagemUrl = `https://woywqncdfuyworcbjjlv.supabase.co/storage/v1/object/public/eventos/${imagemData.path}`;
+                                imagemUrl = `${supabaseUrl}/storage/v1/object/public/eventos/${imagemData.path}`;
                             }
 
                             dados = { nome, data };
@@ -240,24 +419,12 @@
                         }
 
                         alert('Cadastro realizado com sucesso!');
+                        // limpa campos comuns
                         nomeInput.value = '';
                         dataInput.value = '';
-                        imagemInput.value = '';
+                        if (imagemInput) imagemInput.value = '';
                         carregarDados();
                     });
-
-                 async function removerDados(tipo, id) {
-    const tableName = (tipo === 'ramais') ? 'employees' : tipo;
-    const { error } = await supabase.from(tableName).delete().eq('id', id);
-
-    if (error) {
-        alert('Erro ao remover: ' + error.message);
-        return;
-    }
-
-    alert('Removido com sucesso!');
-    carregarDados();
-}
 
 
                     tipoInput.addEventListener('change', () => {
@@ -265,11 +432,17 @@
                         imagemEventoDiv.style.display = 'none';
                         document.getElementById('dataField').style.display = 'none';
                         document.getElementById('ramalFields').style.display = 'none';
+                        logoIdentidadeDiv.style.display = 'none';
+                        imagemIdentidadeDiv.style.display = 'none';
+
                         if (tipo === 'eventos') {
                             imagemEventoDiv.style.display = 'block';
                             document.getElementById('dataField').style.display = 'block';
                         } else if (tipo === 'ramais') {
                             document.getElementById('ramalFields').style.display = 'block';
+                        } else if (tipo === 'identidade') {
+                            logoIdentidadeDiv.style.display = 'block';
+                            imagemIdentidadeDiv.style.display = 'block';
                         } else {
                             document.getElementById('dataField').style.display = 'block';
                         }
@@ -285,4 +458,3 @@
 </body>
 
 </html>
-
