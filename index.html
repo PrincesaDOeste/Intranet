@@ -165,19 +165,6 @@
             margin-right: 1px;
         }
 
-
-
-.quiz-sipat {
-            background-color:  #1a9647;
-            color: #ffffff;
-            border-color: #05afaf;
-            border-radius: 8px;
-            padding: 10px 20px;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        
         .login-button {
             background-color: #ffffff;
             color: #05afaf;
@@ -226,8 +213,8 @@
 
 
         /* ================================
-        AJUSTES PARA DEIXAR A TABELA COM ABAS MAIS COMPACTA
-        ================================ */
+            AJUSTES PARA DEIXAR A TABELA COM ABAS MAIS COMPACTA
+            ================================ */
         .col {
             max-width: 970px;
             /* Limita a largura da coluna onde estão as abas */
@@ -314,8 +301,8 @@
 
 
         /* ================================
-        Container principal do formulário de busca
-        ================================ */
+            Container principal do formulário de busca
+            ================================ */
         /*  */
         .busca-ramais-container {
             background-color: #ffffffe8;
@@ -518,8 +505,7 @@
     <div class="main-wrapper">
         <div class="container-flex mt-4">
             <div class="logo-container">
-                <img src="https://www.princesadoeste.com.br/wp-content/uploads/2019/01/LogoPrincesaDoeste389.png"
-                    alt="Logo Viação Princesa do Oeste">
+                <img id="logoPrincipal" src="" alt="Logo da Empresa">
             </div>
             <div class="menu-buttons">
                 <button class="btn btn-custom"
@@ -528,6 +514,11 @@
 
                 <button class="btn btn-custom"
                     onclick="openFullPopup('https://www.princesadoeste.com.br/cardapio-2/')">Cardápio</button>
+
+                <button class="btn btn-custom"
+                    onclick="openFullPopup('https://docs.google.com/forms/d/e/1FAIpQLSdUuW5hLumiwHzx3Jv08rdInQYVu5Izk2izRA_lmTaYqFua3A/viewform?pli=1&fbzx=4226691298702882557/')">Peça
+                    seu Lanche</button>
+
 
                 <button class="btn btn-custom"
                     onclick="openFullPopup('https://www.marcosoft.com.br/rhonline/login.php')">Holerite</button>
@@ -573,8 +564,8 @@
                 <div id="carouselEventos" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-inner" id="carouselInner">
                         <div class="carousel-item active">
-                            <img src="https://via.placeholder.com/800x400" class="d-block w-100"
-                                alt="Evento Placeholder">
+                            <img src="https://placehold.co/800x400/png
+" class="d-block w-100" alt="Evento Placeholder">
                             <div class="carousel-caption d-none d-md-block">
                                 <h5>Evento de exemplo</h5>
 
@@ -787,12 +778,13 @@
 
                                 if (!data || data.length === 0) {
                                     carouselInner.innerHTML = `
-                    <div class="carousel-item active">
-                        <img src="https://via.placeholder.com/800x400" class="d-block w-100" alt="Evento Placeholder">
-                        <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0, 0, 128, 0.8); position: absolute; bottom: 0; width: 100%; padding: 10px;">
-                            <h5>Sem eventos no momento</h5>
-                        </div>
-                    </div>`;
+                        <div class="carousel-item active">
+                            <img src="https://placehold.co/800x400/png
+" class="d-block w-100" alt="Evento Placeholder">
+                            <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0, 0, 128, 0.8); position: absolute; bottom: 0; width: 100%; padding: 10px;">
+                                <h5>Sem eventos no momento</h5>
+                            </div>
+                        </div>`;
                                     return;
                                 }
 
@@ -825,13 +817,13 @@
 
                                     const activeClass = index === 0 ? 'active' : '';
                                     const item = `
-                    <div class="carousel-item ${activeClass}">
-                        <img src="${imagem_url || 'https://via.placeholder.com/800x400'}" class="d-block w-100" alt="${nome}">
-                        <div class="carousel-caption d-none d-md-block">
-                    
+                        <div class="carousel-item ${activeClass}">
+                            <img src="${imagem_url || 'https://via.placeholder.com/800x400'}" class="d-block w-100" alt="${nome}">
+                            <div class="carousel-caption d-none d-md-block">
                         
-                        </div>
-                    </div>`;
+                            
+                            </div>
+                        </div>`;
                                     carouselInner.insertAdjacentHTML('beforeend', item);
                                 });
 
@@ -969,8 +961,9 @@
                                 const { data: employees, error } = await supabase
                                     .from('employees')
                                     .select('*')
-                                    .ilike('name', `%${searchTerm}%`)
+                                    .or(`name.ilike.%${searchTerm}%,extension.ilike.%${searchTerm}%,department.ilike.%${searchTerm}%`)
                                     .limit(5);
+
 
                                 if (error) throw error;
 
@@ -980,19 +973,19 @@
                                         const resultItem = document.createElement('div');
                                         resultItem.className = 'bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-lg result-fade';
                                         resultItem.innerHTML = `
-                                        <h3 class="employee-name">${employee.name}</h3>
-                                        <div class="employee-info">
-                                            <span class="employee-department">
-                                                Setor: <span class="employee-department-value">${employee.department}</span>
-                                               
-                                            </span>
-<span class="employee-email">
-                                             Email: <span class="employee-email-value">${employee.email}</span>
-                                              </span>
-                                            <span class="employee-extension">${employee.extension}</span>
-                                            
-                                        </div>
-                        `;
+                                            <h3 class="employee-name">${employee.name}</h3> 
+                                            <div class="employee-info">
+                                                <span class="employee-department">
+                                                    Setor: <span class="employee-department-value">${employee.department}</span>
+                                                
+                                                </span>
+    <span class="employee-email">
+                                                Email: <span class="employee-email-value">${employee.email}</span>
+                                                </span>
+                                                <span class="employee-extension">${employee.extension}</span>
+                                                
+                                            </div>
+                            `;
                                         resultsContainer.appendChild(resultItem);
                                     });
                                     resultsContainer.classList.remove('hidden');
@@ -1016,7 +1009,6 @@
                         window.addEventListener('DOMContentLoaded', () => {
                             carregarDados('aniversariantes', 'aniversariantesList', 'Nenhum aniversariante encontrado.');
                             carregarFeriados(); // nova função dedicada
-                            carregarDados('cestas', 'cestasList', 'Nenhuma data disponível.');
                             carregarEventos();
                         });
 
@@ -1105,11 +1097,41 @@
                 </script>
 
 
+
+
+                <script>
+                    async function carregarLogotipo() {
+                        const { data, error } = await supabase
+                            .from("config_imagens_site")
+                            .select("logotipo")
+                            .eq("tipo", "logo_principal")
+                            .order("atualizado_em", { ascending: false })
+                            .limit(1)
+                            .maybeSingle(); // 👈 AQUI
+
+                        if (error) {
+                            console.error("Erro ao carregar logotipo:", error);
+                            return;
+                        }
+
+                        if (!data || !data.logotipo) {
+                            console.warn("Logotipo não encontrado.");
+                            return;
+                        }
+
+                        let logoBase64 = data.logotipo;
+
+                        if (!logoBase64.startsWith("data:image")) {
+                            logoBase64 = "data:image/png;base64," + logoBase64;
+                        }
+
+                        document.getElementById("logoPrincipal").src = logoBase64;
+                    }
+
+                    // Carrega automaticamente
+                    document.addEventListener("DOMContentLoaded", carregarLogotipo);
+                </script>
+
 </body>
 
 </html>
-
-
-
-
-
