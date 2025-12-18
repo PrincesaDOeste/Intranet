@@ -4,582 +4,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Intranet</title>
+    <title>Página RH</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-    <style>
-        body {
-            background-color: #ffffff;
-            color: #0d0f96;
-        }
-
-        /* Força proporção igual em qualquer monitor */
-        .main-wrapper {
-            max-width: 2400px;
-            /* largura máxima fixa */
-            aspect-ratio: 15 / 10;
-            /* mantém proporção da tela */
-            margin: 0 auto;
-            /* centraliza horizontalmente */
-            background-color: white;
-            /* fundo opcional */
-            padding: 1px;
-            box-sizing: border-box;
-        }
-
-        /* Garante que conteúdo interno se ajuste */
-        .main-wrapper>* {
-            max-width: 100%;
-            max-height: 30%;
-
-        }
-
-        html,
-        body {
-            height: 100%;
-            margin: 0;
-        }
-
-
-
-        .btn-custom {
-            background-color: #05afaf;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        .btn-custom:hover {
-            background-color: #ffffff;
-            border-inline-start-color: #05afaf;
-        }
-
-        .carousel-item img {
-            max-height: 500px;
-            /* Aumentado de 500px */
-            object-fit: cover;
-            border-radius: 10px;
-        }
-
-        .carousel-container {
-            padding: 50px;
-        }
-
-        h1 {
-            color: #ffffff;
-            background-color: #0f1e6e;
-            text-align: center;
-            border-radius: 7px;
-            padding: 7px;
-            font-size: 20px;
-            font-family: Arial, sans-serif;
-            /* Define a fonte como Arial */
-        }
-
-        .Eventos {
-            color: #0f1e6e;
-            padding: 7px;
-            text-align: left;
-            padding: 7px;
-            font-size: 20px;
-            font-family: Arial, sans-serif;
-            /* Define a fonte como Arial */
-
-        }
-
-
-
-        .nav-link.active {
-            background-color: #031852;
-            color: #05afaf !important;
-        }
-
-        .card-body {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-        }
-
-        .list-group-item {
-            border: 1px solid #ddd;
-        }
-
-        .menu-buttons {
-            margin-top: -35px;
-            text-align: right;
-            margin-bottom: 5px;
-            font-family: Arial, sans-serif;
-            /* Define a fonte como Arial */
-        }
-
-        /* Estiliza os botões dentro de .menu-buttons */
-        .menu-buttons button {
-            font-size: 12px;
-            /* Tamanho pequeno, mas ainda legível */
-            padding: 9px 10px;
-            height: auto;
-            /* Altura ajustável */
-            border-radius: 8px;
-            /* Cantos arredondados */
-            font-family: Arial, sans-serif;
-            /* Define a fonte como Arial */
-        }
-
-        .menu-buttons .btn {
-            margin-right: 5px;
-            margin-bottom: 4px;
-            font-family: Arial, sans-serif;
-            /* Define a fonte como Arial */
-        }
-
-        .logo-container {
-            text-align: left;
-            margin-bottom: 59px;
-            margin-top: -35px;
-        }
-
-        .logo-container img {
-            width: 220px;
-            margin-bottom: 5px;
-            margin-top: 15px;
-        }
-
-        .container-flex {
-            display: flex;
-            justify-content: space-between;
-
-
-        }
-
-        .container-flex>.col {
-            flex: 1;
-            margin-right: 1px;
-        }
-
-        .login-button {
-            background-color: #ffffff;
-            color: #05afaf;
-            border-color: #05afaf;
-            border-radius: 8px;
-            padding: 10px 20px;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        .tab-list {
-            display: flex;
-            flex-direction: column;
-            height: 100%px;
-            /* Altura fixa igual ao carrossel */
-            overflow-y: auto;
-            /* Rolagem vertical */
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 0.5rem;
-            /* Opcional: espaçamento interno */
-            background-color: #fff;
-            /* Opcional: fundo branco */
-            border-radius: 0.50rem;
-            max-width: 970px;
-        }
-
-
-
-        .aniversariante-hoje {
-            background-color: #05afaf;
-            /* cor suave para destaque */
-            font-weight: bold;
-            color: #fcfcfc;
-            /* cor do texto em destaque */
-        }
-
-        .feroje {
-            background-color: #05afaf;
-            /* cor suave para destaque */
-            font-weight: bold;
-            color: #fcfcfc;
-            /* cor do texto em destaque */
-        }
-
-
-
-        /* ================================
-            AJUSTES PARA DEIXAR A TABELA COM ABAS MAIS COMPACTA
-            ================================ */
-        .col {
-            max-width: 970px;
-            /* Limita a largura da coluna onde estão as abas */
-            font-size: 0.9rem;
-            /* Diminui o tamanho da fonte no conteúdo */
-            margin: 0 auto;
-            /* Centraliza horizontalmente */
-        }
-
-        .tab-list-container {
-            display: flex;
-            flex-direction: column;
-            height: auto;
-            /* independente, ajusta à altura do conteúdo */
-            max-width: 970px;
-            /* mesma largura da coluna */
-            margin: 0 auto;
-            /* centraliza horizontalmente */
-            box-sizing: border-box;
-            /* garante que padding não altere a largura */
-        }
-
-        .tab-content {
-            height: 47%;
-            /* ocupa toda altura do container pai */
-            overflow-y: auto;
-            /* caso o conteúdo seja maior que a altura */
-        }
-
-        .tab-list-container {
-            display: flex;
-            flex-direction: column;
-            max-width: 970px;
-            /* largura igual à coluna */
-            margin: 0 auto;
-            /* centraliza horizontalmente */
-            height: auto;
-            /* altura vai ser ajustada via JS */
-            box-sizing: border-box;
-        }
-
-        .tab-content {
-            overflow-y: auto;
-            /* caso conteúdo ultrapasse a altura */
-        }
-
-        .list-group-item {
-            padding: 1px 8px;
-            /* Reduz o espaçamento interno dos itens */
-            font-size: 0.85rem;
-            /* Diminui o tamanho da fonte dos itens da lista */
-        }
-
-        .nav-tabs .nav-link {
-            padding: 6px 10px;
-            /* Reduz o tamanho das abas */
-            font-size: 0.85rem;
-            /* Fonte menor nas abas */
-        }
-
-        .nav-tabs .nav-item {
-            margin-right: 9px;
-            /* Espaçamento menor entre as abas */
-        }
-
-        .notification-dot {
-            position: absolute;
-            top: -1px;
-            /* Ajuste a posição vertical */
-            right: -3px;
-            /* Ajuste a posição horizontal */
-            width: 7px;
-            /* Tamanho da bolinha */
-            height: 7px;
-            /* Tamanho da bolinha */
-            background-color: red;
-            /* Cor da bolinha */
-            border-radius: 50%;
-            /* Faz a bolinha ser redonda */
-            display: none;
-            /* Inicialmente escondida */
-        }
-
-
-
-        /* ================================
-            Container principal do formulário de busca
-            ================================ */
-        /*  */
-        .busca-ramais-container {
-            background-color: #ffffffe8;
-
-            max-width: 970px;
-            width: 100%;
-            /* garante que se adapte mas não ultrapasse */
-            height: 35%px;
-            /* altura fixa */
-
-            border-radius: 1rem;
-            box-shadow: 0 4px 12px rgba(196, 72, 72, 0.1);
-            padding: 1rem;
-
-            margin: 0 auto;
-            /* centraliza horizontalmente */
-            margin-top: 1rem;
-            /* distância fixa do topo */
-
-            overflow: hidden;
-            border: 0.1px solid #ccc;
-
-            position: relative;
-            /* mantém na estrutura */
-        }
-
-        .busca-ramais-container {
-            color: #0f1e6e;
-            padding: 12px;
-            text-align: left;
-            padding: 12px;
-            font-size: 12px;
-            font-family: Arial, sans-serif;
-            /* Define a fonte como Arial */
-
-        }
-
-
-        #resultsContainer {
-            border-radius: 0.1rem;
-            /* mesmo do container */
-            border: 0.1px solid #084aad;
-            font-weight: bold;
-
-        }
-
-        /* Título e descrição */
-        .busca-ramais-container .text-center h1 {
-            font-size: 1rem;
-            /* Reduzido de 1.25rem */
-            margin-bottom: 0.5rem;
-            /* Reduzido de 0.5rem */
-        }
-
-        .busca-ramais-container .text-center p {
-            margin-top: 0.15rem;
-            /* Reduzido de 0.25rem */
-        }
-
-        /* Input de pesquisa */
-        .busca-ramais-container input#searchInput {
-            width: 100%;
-            padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-            /* Espaço para ícone */
-            border: 1px solid #e1e2e4;
-            border-radius: 0.5rem;
-            background-color: #f9fafb;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        /* Container de resultados */
-        #resultsContainer {
-            margin-top: 0.1rem;
-            /* Reduzido de 1rem */
-            max-height: 100px;
-            /* Reduzido de 80px */
-            overflow-y: auto;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            background-color: #fff;
-            padding: 0.10rem;
-            /* Reduzido de 0.5rem */
-        }
-
-        /* Rodapé do formulário */
-        .busca-ramais-container .text-sm p {
-            margin-top: 0rem;
-            /* Reduzido de 1rem */
-        }
-
-
-
-        .employee-name {
-            font-weight: bold;
-            color: #1e40af;
-            /* text-blue-800 */
-        }
-
-        .employee-info {
-            margin-top: 1rem;
-            /* mt-1 */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 1px;
-        }
-
-        .employee-department {
-            color: #374151;
-            /* text-gray-700 */
-        }
-
-        .employee-email {
-            color: #374151;
-            /* text-gray-700 */
-        }
-
-        .employee-department-value {
-            font-weight: 200;
-            /* font-medium */
-        }
-
-        .employee-extension {
-            background-color: #dbeafe;
-            /* bg-blue-100 */
-            color: #1e40af;
-            /* text-blue-800 */
-            padding: 0.25rem 0.75rem;
-            /* py-1 px-3 */
-            border-radius: 999px;
-            /* rounded-full */
-            font-weight: 600;
-            /* font-semibold */
-            font-size: 0.875rem;
-            /* text-sm */
-
-        }
-
-
-        /* Caixa de observação */
-        .info-box {
-            text-align: center;
-            background: #eaf6f6;
-            border: 1px solid #05afaf;
-            border-radius: 10px;
-            padding: 0px;
-            margin-bottom: 7px;
-            font-size: 12px;
-            color: #0f1e6e;
-            font-weight: 500;
-        }
-
-        /* Centralizar calendário */
-        .calendar-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        /* Ajuste de proporção */
-        .calendar {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-            width: 90%;
-            /* menor e centralizado */
-            max-width: 400px;
-            /* limita o tamanho máximo */
-        }
-
-        .calendar .day {
-            border: 1px solid #ccc;
-            padding: 10px;
-            /* menor que antes */
-            text-align: center;
-            border-radius: 6px;
-            background: #f8f9fa;
-            font-size: 12px;
-            /* letras menores */
-        }
-
-        .calendar .header {
-            font-weight: bold;
-            background: #0f1e6e;
-            color: white;
-            font-size: 13px;
-        }
-
-        .calendar .highlight {
-            background: #05afaf;
-            color: #fff;
-            font-weight: bold;
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
+<style>
+    /* Rolagem vertical nas listas */
+    .list-group {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    /* Margem na barra de busca */
+    .search-bar {
+        margin-bottom: 10px;
+    }
+
+    .img-preview {
+        max-width: 90px;
+        max-height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-left: 8px;
+    }
+</style>
 
 <body class="p-4">
+    <div class="container">
+        <h1 class="text-center">Página RH</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Cadastrar Dados</h2>
+                <form id="cadastroForm">
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo de Cadastro</label>
+                        <select id="tipo" class="form-select">
+                            <option value="aniversariantes">Aniversariante</option>
+                            <option value="feriados">Feriado</option>
+                            <option value="cestas">Data para Cestas</option>
+                            <option value="eventos">Evento</option>
+                            <option value="ramais">Ramal</option>
+                            <option value="identidade">Identidade</option>
+                        </select>
+                    </div>
+                    <div id="infoCadastro">
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Nome</label>
+                            <input type="text" id="nome" class="form-control" required>
+                        </div>
+                        <div class="mb-3" id="dataField">
+                            <label for="data" class="form-label">Data</label>
+                            <input type="date" id="data" class="form-control">
+                        </div>
+                        <div class="mb-3" id="imagemEvento" style="display:none;">
+                            <label for="imagem" class="form-label">Imagem do Evento</label>
+                            <input type="file" id="imagem" class="form-control" accept="image/*">
+                        </div>
 
-    <div class="main-wrapper">
-        <div class="container-flex mt-4">
-            <div class="logo-container">
-                <img id="logoPrincipal" src="" alt="Logo da Empresa">
-            </div>
-            <div class="menu-buttons">
-                <button class="btn btn-custom"
-                    onclick="openFullPopup('https://docs.google.com/forms/d/e/1FAIpQLSeq-lALEzem1qXk07OHUT_eikIEHPvTC4UOyZoKfejA-C4cog/viewform')">De
-                    olho na frota</button>
+                        <!-- Campos para IDENTIDADE (logotipo + imagem destaque) -->
+                        <div class="mb-3" id="logoIdentidade" style="display:none;">
+                            <label for="logotipo" class="form-label">Logotipo</label>
+                            <input type="file" id="logotipo" class="form-control" accept="image/*">
+                        </div>
+                        <div class="mb-3" id="imagemIdentidade" style="display:none;">
+                            <label for="imagemDestaqueIdentidade" class="form-label">Imagem de Destaque #Em
+                                produção</label>
+                            <input type="file" id="imagemDestaqueIdentidade" class="form-control" accept="image/*">
+                        </div>
+                        <!-- fim IDENTIDADE -->
 
-                <button class="btn btn-custom"
-                    onclick="openFullPopup('https://www.princesadoeste.com.br/cardapio-2/')">Cardápio</button>
+                        <div class="mb-3" id="ramalFields" style="display:none;">
+                            <label for="ramal" class="form-label">Ramal</label>
+                            <input type="text" id="ramal" class="form-control">
 
-                <button class="btn btn-custom"
-                    onclick="openFullPopup('https://www.marcosoft.com.br/rhonline/login.php')">Holerite</button>
+                            <label for="setor" class="form-label mt-2">Setor</label>
+                            <input type="text" id="setor" class="form-control">
 
-                <button class="btn btn-custom"
-                    onclick="openFullPopup('https://www.princesadoeste.com.br/')">Instituição</button>
-
-                <button class="btn login-button" onclick="openFullPopup('login.html', 1000, 100)">Painel</button>
-            </div>
-        </div>
-
-        <script>
-            function openFullPopup(url, width, height) {
-                width = width || screen.width;
-                height = height || screen.height;
-                const left = (screen.width - width) / 2;
-                const top = (screen.height - height) / 2;
-
-                window.open(
-                    url,
-                    "_blank",
-                    `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
-                );
-            }
-        </script>
-
-        <div>
-            <h1>Portal de Comunicação</h1>
-        </div>
-
-        <div class="container-flex mt-4">
-            <div class="col" id="eventosContainer">
-                <h2 class="Eventos">
-                    Eventos
-                    <span id="notificationBell" class="notification-bell" style="position: relative;"
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="Novos eventos disponíveis!">
-                        🔔
-                        <span id="notificationDot" class="notification-dot" style="display: none;"></span>
-                    </span>
-
-                </h2>
-
-                <div id="carouselEventos" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner" id="carouselInner">
-                        <div class="carousel-item active">
-                            <img src="https://placehold.co/800x400/png
-" class="d-block w-100" alt="Evento Placeholder">
-                            <div class="carousel-caption d-none d-md-block">
-                                <h5>Evento de exemplo</h5>
-
-                            </div>
+                            <label for="email" class="form-label mt-2">E-mail</label>
+                            <input type="email" id="email" class="form-control">
                         </div>
                     </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselEventos"
-                        data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Anterior</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselEventos"
-                        data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Próximo</span>
-                    </button>
-                </div>
+                    <button type="submit" class="btn btn-primary">Cadastrar</button>
+                </form>
             </div>
-            <div class="col">
-                <!-- Abas -->
+            <div class="col-md-6">
+                <h2>Visualizar Dados</h2>
                 <ul class="nav nav-tabs" id="tabData">
                     <li class="nav-item">
                         <a class="nav-link active" id="aniversariantes-tab" data-bs-toggle="tab"
@@ -589,547 +98,367 @@
                         <a class="nav-link" id="feriados-tab" data-bs-toggle="tab" href="#tabFeriados">Feriados</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="cestas-tab" data-bs-toggle="tab" href="#tabCestas">Datas de retirada da
-                            cesta</a>
+                        <a class="nav-link" id="cestas-tab" data-bs-toggle="tab" href="#tabCestas">Datas Cestas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="eventos-tab" data-bs-toggle="tab" href="#tabEventos">Eventos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="ramais-tab" data-bs-toggle="tab" href="#tabRamais">Ramais</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="identidade-tab" data-bs-toggle="tab"
+                            href="#tabIdentidade">Identidade</a>
                     </li>
                 </ul>
-
-                <div class="tab-content mt-4">
+                <div class="tab-content mt-3">
                     <div class="tab-pane fade show active" id="tabAniversariantes">
-                        <ul id="aniversariantesList" class="list-group tab-list"></ul>
+                        <input type="text" class="form-control search-bar" placeholder="Pesquisar aniversariantes...">
+                        <ul id="aniversariantesList" class="list-group"></ul>
                     </div>
                     <div class="tab-pane fade" id="tabFeriados">
-                        <ul id="feriadosList" class="list-group tab-list"></ul>
+                        <input type="text" class="form-control search-bar" placeholder="Pesquisar feriados...">
+                        <ul id="feriadosList" class="list-group"></ul>
                     </div>
                     <div class="tab-pane fade" id="tabCestas">
-                        <!-- INÍCIO CAIXA DE TEXTO -->
-                        <div class="info-box">
-                            <p><strong>RETIRADA DA CESTA BÁSICA MANHÃ 09 A 11H — TARDE 14 A 16H</strong></p>
-                        </div>
-                        <!-- FIM CAIXA DE TEXTO -->
+                        <input type="text" class="form-control search-bar" placeholder="Pesquisar datas de cestas...">
+                        <ul id="cestasList" class="list-group"></ul>
+                    </div>
+                    <div class="tab-pane fade" id="tabEventos">
+                        <input type="text" class="form-control search-bar" placeholder="Pesquisar eventos...">
+                        <ul id="eventosList" class="list-group"></ul>
+                    </div>
+                    <div class="tab-pane fade" id="tabRamais">
+                        <input type="text" class="form-control search-bar" placeholder="Pesquisar ramais...">
+                        <ul id="ramaisList" class="list-group"></ul>
+                    </div>
 
-                        <!-- INÍCIO CALENDÁRIO -->
-                        <div class="calendar-container">
-                            <div id="calendar" class="calendar"></div>
-                        </div>
-                        <!-- FIM CALENDÁRIO -->
+                    <!-- Aba Identidade -->
+                    <div class="tab-pane fade" id="tabIdentidade">
+                        <input type="text" class="form-control search-bar" placeholder="Pesquisar identidade...">
+                        <ul id="identidadeList" class="list-group"></ul>
                     </div>
                 </div>
 
-                <div class="busca-ramais-container">
-                    <div class="text-center mb-6">
-                        <h1>Busca de Ramais</h1>
+                <script>
+                    if (!window.supabaseClient) {
+                        const supabaseUrl = 'https://woywqncdfuyworcbjjlv.supabase.co';
+                        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXdxbmNkZnV5d29yY2Jqamx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMTUyNzgsImV4cCI6MjA2MDU5MTI3OH0.o63pZx8l8oe1aEYKEaYVQyHgEvR5FGkfAygTLTvWWVA';
+                        window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    }
 
-                    </div>
+                    var supabase = window.supabaseClient;
 
-                    <div class="w-full max-w-md mx-auto">
-                        <!-- Campo de pesquisa -->
-                        <label for="searchInput" class="sr-only">Digite o nome do colaborador,ramal ou setor.</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <!-- Ícone de pesquisa -->
-                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
-                                </svg>
-                            </div>
-                            <input type="text" id="searchInput"
-                                class="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Digite o nome do colaborador" autocomplete="off">
-                        </div>
+                    const cadastroForm = document.getElementById('cadastroForm');
+                    const tipoInput = document.getElementById('tipo');
+                    const nomeInput = document.getElementById('nome');
+                    const dataInput = document.getElementById('data');
+                    const imagemInput = document.getElementById('imagem');
+                    const aniversariantesList = document.getElementById('aniversariantesList');
+                    const feriadosList = document.getElementById('feriadosList');
+                    const cestasList = document.getElementById('cestasList');
+                    const eventosList = document.getElementById('eventosList');
+                    const ramaisList = document.getElementById('ramaisList');
+                    const identidadeList = document.getElementById('identidadeList');
+                    const imagemEventoDiv = document.getElementById('imagemEvento');
 
-                        <!-- Resultados da pesquisa -->
-                        <div id="resultsContainer"
-                            class="hidden mt-2 bg-white shadow rounded-lg divide-y divide-gray-200"></div>
-                        <div id="noResults" class="hidden mt-2 text-red-500 text-sm">Nenhum colaborador encontrado com
-                            esse nome.</div>
+                    // elementos identidade
+                    const logoIdentidadeDiv = document.getElementById('logoIdentidade');
+                    const imagemIdentidadeDiv = document.getElementById('imagemIdentidade');
+                    const logotipoInput = document.getElementById('logotipo');
+                    const imagemDestaqueIdentidadeInput = document.getElementById('imagemDestaqueIdentidade');
 
-                        <!-- Informação adicional -->
-                        <p class="mt-6 pt-4 border-t border-gray-200 text-sm text-gray-500">
-                            Obs.: Para capturar ligação de outro ramal, disque #5 + número do ramal. / Para chamadas
-                            corporativas para celular, disque 041 + DDD. / Para ligar para outra operadora, disque 15 +
-                            DDD.
-                    </div>
-                    <script>
-                         if (!window.supabaseClient) {
-        const supabaseUrl = 'https://woywqncdfuyworcbjjlv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXdxbmNkZnV5d29yY2Jqamx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMTUyNzgsImV4cCI6MjA2MDU5MTI3OH0.o63pZx8l8oe1aEYKEaYVQyHgEvR5FGkfAygTLTvWWVA';
-        window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-    }
-
-    var supabase = window.supabaseClient;
-    
-                        async function carregarDados(tabela, listaId, mensagem) {
-                            try {
-                                // CORREÇÃO RAMAIS: se tabela for "ramais", use "employees"
-                                const tableName = tabela === 'ramais' ? 'employees' : tabela;
-                                const { data, error } = await supabase.from(tableName).select();
-                                if (error) throw error;
-
-                                const lista = document.getElementById(listaId);
-                                lista.innerHTML = '';
-
-                                if (!data || data.length === 0) {
-                                    lista.innerHTML = `<li class="list-group-item">${mensagem}</li>`;
-                                    return;
-                                }
-
-                                // Se for ramais, renderiza de forma diferente
-                                if (tabela === 'ramais') {
-                                    data.forEach(item => {
-                                        const li = document.createElement('li');
-                                        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-
-                                        // Agora mostrando também o email
-                                        li.textContent = `${item.nome || item.name} - ${item.ramal || item.extension} - ${item.setor || item.department} - ${item.email}`;
-
-                                        const btn = document.createElement('button');
-                                        btn.className = 'btn btn-danger btn-sm';
-                                        btn.textContent = 'Remover';
-                                        btn.onclick = () => removerDados(tableName, item.id);
-
-                                        li.appendChild(btn);
-                                        lista.appendChild(li);
-                                    });
-                                    return;
-                                }
-
-
-                                const hoje = new Date();
-                                const mesAtual = hoje.getMonth();
-                                const anoAtual = hoje.getFullYear();
-                                const hojeDiaMes = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-
-                                const aniversariantesHoje = [];
-                                const aniversariantesOutros = [];
-
-                                data.forEach(({ nome, data }) => {
-                                    try {
-                                        const [ano, mes, dia] = data.split('T')[0].split('-');
-                                        const parsedDate = new Date(ano, mes - 1, dia);
-
-                                        if (!isNaN(parsedDate) && parsedDate.getMonth() === mesAtual) {
-                                            const diaMes = parsedDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-                                            const classeExtra = diaMes === hojeDiaMes ? 'aniversariante-hoje' : '';
-                                            const item = `<li class="list-group-item ${classeExtra}">${nome} - ${diaMes}</li>`;
-
-                                            if (diaMes === hojeDiaMes) {
-                                                aniversariantesHoje.push(item);
-                                            } else {
-                                                aniversariantesOutros.push(item);
-                                            }
-                                        }
-                                    } catch (e) {
-                                        console.error("Erro ao converter data:", e);
-                                    }
-                                });
-
-                                if (aniversariantesHoje.length === 0 && aniversariantesOutros.length === 0) {
-                                    lista.innerHTML = `<li class="list-group-item">${mensagem}</li>`;
-                                    return;
-                                }
-
-                                aniversariantesOutros.sort((a, b) => {
-                                    const hoje = new Date();
-                                    const ano = hoje.getFullYear();
-                                    const mesAtual = hoje.getMonth();
-                                    const diaHoje = hoje.getDate();
-
-                                    const getData = str => {
-                                        const match = str.match(/(\d{2})\/(\d{2})/);
-                                        if (!match) return new Date(9999, 11, 31);
-                                        const [_, dia, mes] = match;
-                                        return new Date(ano, parseInt(mes) - 1, parseInt(dia));
-                                    };
-
-                                    const dataA = getData(a);
-                                    const dataB = getData(b);
-
-                                    const diffA = (dataA.getMonth() < mesAtual || (dataA.getMonth() === mesAtual && dataA.getDate() < diaHoje))
-                                        ? dataA.getTime() + 365 * 24 * 60 * 60 * 1000
-                                        : dataA.getTime();
-
-                                    const diffB = (dataB.getMonth() < mesAtual || (dataB.getMonth() === mesAtual && dataB.getDate() < diaHoje))
-                                        ? dataB.getTime() + 365 * 24 * 60 * 60 * 1000
-                                        : dataB.getTime();
-
-                                    return diffA - diffB;
-                                });
-
-                                [...aniversariantesHoje, ...aniversariantesOutros].forEach(item => {
-                                    lista.insertAdjacentHTML('beforeend', item);
-                                });
-
-                            } catch (e) {
-                                console.error("Erro ao carregar dados:", e.message);
-                            }
-                        } let hasNewEvent = false; // Variável para rastrear novos eventos
-
-                        async function carregarEventos() {
-                            try {
-                                const { data, error } = await supabase.from('eventos').select();
-                                if (error) throw error;
-
-                                const carouselInner = document.getElementById('carouselInner');
-                                carouselInner.innerHTML = '';
-
-                                if (!data || data.length === 0) {
-                                    carouselInner.innerHTML = `
-                        <div class="carousel-item active">
-                            <img src="https://placehold.co/800x400/png
-" class="d-block w-100" alt="Evento Placeholder">
-                            <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0, 0, 128, 0.8); position: absolute; bottom: 0; width: 100%; padding: 10px;">
-                                <h5>Sem eventos no momento</h5>
-                            </div>
-                        </div>`;
-                                    return;
-                                }
-
-                                // Inverter a ordem para LIFO
-                                data.reverse();
-
-                                // Verifica se há eventos para o dia atual
-                                const today = new Date();
-                                const todayString = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-
-                                hasNewEvent = data.some(event => {
-                                    const eventDate = new Date(event.data);
-                                    const eventDateString = eventDate.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-                                    return eventDateString === todayString; // Compara as datas
-                                });
-
-                                data.forEach(({ imagem_url, nome, data }, index) => {
-                                    let formattedDate = 'Data não disponível';
-
-                                    if (data) {
-                                        try {
-                                            const parsedDate = new Date(data);
-                                            if (!isNaN(parsedDate)) {
-                                                formattedDate = parsedDate.toLocaleDateString('pt-BR');
-                                            }
-                                        } catch (e) {
-                                            console.error("Erro ao converter data:", e);
-                                        }
-                                    }
-
-                                    const activeClass = index === 0 ? 'active' : '';
-                                    const item = `
-                        <div class="carousel-item ${activeClass}">
-                            <img src="${imagem_url || 'https://via.placeholder.com/800x400'}" class="d-block w-100" alt="${nome}">
-                            <div class="carousel-caption d-none d-md-block">
-                        
-                            
-                            </div>
-                        </div>`;
-                                    carouselInner.insertAdjacentHTML('beforeend', item);
-                                });
-
-                                // Se houver um evento para o dia atual, ativa a notificação
-                                if (hasNewEvent) {
-                                    const dot = document.getElementById('notificationDot');
-                                    dot.style.display = 'block'; // Mostra a bolinha vermelha
-                                } else {
-                                    const dot = document.getElementById('notificationDot');
-                                    dot.style.display = 'none'; // Esconde a bolinha vermelha se não houver eventos
-                                }
-                            } catch (error) {
-                                console.error("Erro ao carregar eventos:", error.message);
-                            }
+                    // Função de filtro
+                    function filtrarLista(input) {
+                        const termo = input.value.toLowerCase();
+                        const lista = input.closest('.tab-pane').querySelector('.list-group');
+                        if (!lista) return;
+                        const itens = lista.getElementsByTagName('li');
+                        for (let i = 0; i < itens.length; i++) {
+                            const texto = itens[i].textContent.toLowerCase();
+                            itens[i].style.display = texto.includes(termo) ? '' : 'none';
                         }
+                    }
 
-                        // Adiciona um evento de clique ao título "Eventos" após o DOM estar carregado
-                        document.addEventListener('DOMContentLoaded', () => {
-                            // Inicializa o tooltip
-                            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                            const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                                return new bootstrap.Tooltip(tooltipTriggerEl);
-                            });
-
-                            document.getElementById('notificationBell').addEventListener('click', () => {
-                                // Remove a notificação
-                                const dot = document.getElementById('notificationDot');
-                                dot.style.display = 'none'; // Esconde a bolinha vermelha
-                                hasNewEvent = false; // Reseta a variável
-
-                                // Exibe o primeiro evento no carrossel
-                                const carousel = new bootstrap.Carousel(document.getElementById('carouselEventos'));
-                                carousel.to(0); // Muda para o primeiro evento
-                            });
+                    // Adiciona listeners de pesquisa
+                    function adicionarFiltros() {
+                        document.querySelectorAll('.search-bar').forEach(input => {
+                            input.addEventListener('input', () => filtrarLista(input));
                         });
+                    }
+
+                    // converte arquivo para dataURL (base64)
+                    function fileToDataURL(file) {
+                        return new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(file);
+                        });
+                    }
+                    function formatarDataBR(dataISO) {
+                        if (!dataISO) return '';
+                        const [ano, mes, dia] = dataISO.split('-');
+                        return `${dia}/${mes}/${ano}`;
+                    }
+
+                    window.removerDados = async function (tipo, id) {
+                        if (!confirm('Tem certeza que deseja remover este registro?')) return;
+
+                        let tableName = tipo === 'ramais' ? 'employees' : tipo;
+                        if (tipo === 'identidade') tableName = 'config_imagens_site';
+
+                        const { error } = await supabase
+                            .from(tableName)
+                            .delete()
+                            .eq('id', id);
+
+                        if (error) {
+                            console.error(error);
+                            alert('Erro ao remover registro: ' + error.message);
+                            return;
+                        }
+
+                        alert('Registro removido com sucesso!');
+                        carregarDados();
+                    };
 
 
-                        async function carregarFeriados() {
-                            try {
-                                const { data, error } = await supabase.from('feriados').select();
-                                if (error) throw error;
+                    async function carregarDados() {
+                        const tipos = ['aniversariantes', 'feriados', 'cestas', 'eventos', 'ramais', 'identidade'];
+                        for (const tipo of tipos) {
+                            // mapeia nome da tabela
+                            let tableName = tipo === 'ramais' ? 'employees' : tipo;
+                            if (tipo === 'identidade') tableName = 'config_imagens_site';
 
-                                const lista = document.getElementById('feriadosList');
-                                lista.innerHTML = '';
+                            const { data, error } = await supabase.from(tableName).select();
+                            if (error) {
+                                console.error(`Erro ao carregar ${tipo}:`, error);
+                                continue;
+                            }
 
-                                if (!data || data.length === 0) {
-                                    lista.innerHTML = '<li class="list-group-item">NENHUM FERIADO CADASTRADO.</li>';
-                                    return;
-                                }
+                            const list = tipo === 'aniversariantes' ? aniversariantesList :
+                                tipo === 'feriados' ? feriadosList :
+                                    tipo === 'cestas' ? cestasList :
+                                        tipo === 'eventos' ? eventosList :
+                                            tipo === 'ramais' ? ramaisList : identidadeList;
 
-                                // Ordenar os feriados por data crescente, usando data local para evitar erro de fuso
-                                data.sort((a, b) => {
-                                    const [anoA, mesA, diaA] = a.data.split('T')[0].split('-');
-                                    const [anoB, mesB, diaB] = b.data.split('T')[0].split('-');
-                                    const dA = new Date(Number(anoA), Number(mesA) - 1, Number(diaA));
-                                    const dB = new Date(Number(anoB), Number(mesB) - 1, Number(diaB));
-                                    return dA - dB;
-                                });
+                            list.innerHTML = '';
+                            if (!data || data.length === 0) {
+                                const li = document.createElement('li');
+                                li.className = 'list-group-item';
+                                li.textContent = `Nenhum dado encontrado para ${tipo}.`;
+                                list.appendChild(li);
+                            } else {
+                                data.forEach(item => {
+                                    const li = document.createElement('li');
+                                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
 
-                                const hoje = new Date();
-                                const anoAtual = hoje.getFullYear();
-                                const hojeDiaMes = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-
-                                // Filtrar feriados que pertencem ao ano atual, criando data local
-                                const feriadosDoAno = data.filter(({ data }) => {
-                                    try {
-                                        const [ano, mes, dia] = data.split('T')[0].split('-');
-                                        const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
-                                        return !isNaN(d) && d.getFullYear() === anoAtual;
-                                    } catch {
-                                        return false;
-                                    }
-                                });
-
-                                // Se não houver feriados no ano atual, mostra mensagem e retorna
-                                if (feriadosDoAno.length === 0) {
-                                    lista.innerHTML = '<li class="list-group-item" style="color: red; font-weight: bold;">NÃO HÁ FERIADOS PROGRAMADOS PARA ESTE ANO.</li>';
-                                    return;
-                                }
-
-                                // Exibe todos os feriados do ano atual, formatando data local e destacando feriado de hoje
-                                feriadosDoAno.forEach(({ nome, data }) => {
-                                    try {
-                                        const [ano, mes, dia] = data.split('T')[0].split('-');
-                                        const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
-                                        if (!isNaN(d)) {
-                                            const dataFormatada = d.toLocaleDateString('pt-BR', {
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric'
-                                            }).toUpperCase();
-                                            const nomeUpper = nome.toUpperCase();
-
-                                            // Verifica se é feriado de hoje (somente dia e mês)
-                                            const feriadoDiaMes = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-                                            const classeHoje = (feriadoDiaMes === hojeDiaMes) ? 'aniversariante-hoje' : '';
-
-                                            const item = `<li class="list-group-item ${classeHoje}">${dataFormatada} - ${nomeUpper}</li>`;
-                                            lista.innerHTML += item;
+                                    if (tipo === 'ramais') {
+                                        li.textContent = `${item.name} - ${item.extension} - ${item.department} - ${item.email}`;
+                                    } else if (tipo === 'identidade') {
+                                        // item is from config_imagens_site
+                                        // item.nome, item.tipo, item.descricao, item.logotipo, item.imagem_destaque
+                                        const left = document.createElement('div');
+                                        left.innerHTML = `<strong>${item.nome || '(sem nome)'}</strong><br><small>${item.tipo || ''}</small>`;
+                                        if (item.descricao) {
+                                            left.innerHTML += `<div style="font-size:12px;color:#666;">${item.descricao}</div>`;
                                         }
-                                    } catch (e) {
-                                        console.error("Erro ao formatar data:", e);
-                                    }
-                                });
 
-                            } catch (e) {
-                                console.error("Erro ao carregar feriados:", e.message);
+                                        li.appendChild(left);
+
+                                        const imgs = document.createElement('div');
+                                        if (item.logotipo) {
+                                            const img = document.createElement('img');
+                                            img.src = item.logotipo; // já é dataURL
+                                            img.alt = 'logotipo';
+                                            img.className = 'img-preview';
+                                            imgs.appendChild(img);
+                                        }
+                                        if (item.imagem_destaque) {
+                                            const img2 = document.createElement('img');
+                                            img2.src = item.imagem_destaque;
+                                            img2.alt = 'destaque';
+                                            img2.className = 'img-preview';
+                                            imgs.appendChild(img2);
+                                        }
+                                        li.appendChild(imgs);
+                                    } else {
+                                        li.textContent = `${item.nome || ''} - ${formatarDataBR(item.data)}`;
+                                        if (item.imagem_url) {
+                                            const img = document.createElement('img');
+                                            img.src = item.imagem_url;
+                                            img.alt = 'Imagem do Evento';
+                                            img.className = 'img-thumbnail ms-2';
+                                            img.style.width = '50px';
+                                            li.appendChild(img);
+                                        }
+                                    }
+
+                                    const btn = document.createElement('button');
+                                    btn.className = 'btn btn-danger btn-sm';
+                                    btn.textContent = 'Remover';
+                                    btn.onclick = () => removerDados(tipo, item.id);
+                                    li.appendChild(btn);
+
+                                    list.appendChild(li);
+                                });
                             }
                         }
-                        // Elementos do formulário
-                        const searchInput = document.getElementById('searchInput');
-                        const resultsContainer = document.getElementById('resultsContainer');
-                        const noResults = document.getElementById('noResults');
+                    }
 
-                        // Função debounce
-                        function debounce(func, delay) {
-                            let timeout;
-                            return function () {
-                                clearTimeout(timeout);
-                                timeout = setTimeout(func, delay);
-                            };
+                    cadastroForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const tipo = tipoInput.value;
+                        const nome = nomeInput.value.trim();
+                        const data = tipo !== 'ramais' ? dataInput.value : null;
+                        const imagem = tipo === 'eventos' ? imagemInput.files[0] : null;
+                        const ramal = tipo === 'ramais' ? document.getElementById('ramal').value : null;
+                        const setor = tipo === 'ramais' ? document.getElementById('setor').value : null;
+                        const email = tipo === 'ramais' ? document.getElementById('email').value : null;
+
+                        // Validações gerais
+                        if (!nome) {
+                            alert("Por favor, preencha o nome.");
+                            return;
                         }
 
-                        // Função de busca no Supabase
-                        const searchRamais = async () => {
-                            const searchTerm = searchInput.value.trim();
+                        // data é obrigatória para todos exceto ramais e identidade
+                        if (tipo !== 'ramais' && tipo !== 'identidade' && !data) {
+                            alert("Por favor, informe a data.");
+                            return;
+                        }
 
-                            if (searchTerm.length < 2) {
-                                resultsContainer.classList.add('hidden');
-                                noResults.classList.add('hidden');
+                        // validação ramais
+                        if (tipo === 'ramais' && (!ramal || !setor || !email)) {
+                            alert("Por favor, preencha ramal, setor e e-mail.");
+                            return;
+                        }
+
+                        // validação eventos (mantive o comportamento atual: pede imagem)
+                        if (tipo === 'eventos' && !imagem) {
+                            alert("Por favor, selecione a imagem do evento.");
+                            return;
+                        }
+
+                        let dados = {};
+                        let error;
+
+                        // ===== IDENTIDADE (0, 1 ou 2 imagens aceitas) =====
+                        // ===== IDENTIDADE (0, 1 ou 2 imagens aceitas) =====
+                        if (tipo === 'identidade') {
+                            try {
+                                const logoFile = logotipoInput ? logotipoInput.files[0] : null;
+                                const destaqueFile = imagemDestaqueIdentidadeInput ? imagemDestaqueIdentidadeInput.files[0] : null;
+
+                                // função auxiliar para converter arquivo -> dataURL (base64)
+                                const convertToDataUrl = (file) => {
+                                    return new Promise((resolve, reject) => {
+                                        if (!file) return resolve(null);
+                                        const reader = new FileReader();
+                                        reader.onload = () => resolve(reader.result);
+                                        reader.onerror = reject;
+                                        reader.readAsDataURL(file);
+                                    });
+                                };
+
+                                const logoDataUrl = await convertToDataUrl(logoFile);
+                                const destaqueDataUrl = await convertToDataUrl(destaqueFile);
+
+                                ({ error } = await supabase.from('config_imagens_site').insert([{
+                                    nome: nome,
+                                    tipo: 'logo_principal',
+                                    descricao: 'Identidade cadastrada via painel',
+                                    logotipo: logoDataUrl,            // pode ser null
+                                    imagem_destaque: destaqueDataUrl, // pode ser null
+                                    atualizado_em: new Date()
+                                }]));
+
+                                if (error) {
+                                    alert('Erro ao cadastrar identidade: ' + error.message);
+                                    return;
+                                }
+
+                                alert('Identidade cadastrada com sucesso!');
+                                // limpar campos relevantes
+                                nomeInput.value = '';
+                                dataInput.value = '';
+                                if (logotipoInput) logotipoInput.value = '';
+                                if (imagemDestaqueIdentidadeInput) imagemDestaqueIdentidadeInput.value = '';
+                                carregarDados();
+                                return;
+                            } catch (err) {
+                                console.error(err);
+                                alert('Erro ao processar imagens da identidade.');
                                 return;
                             }
-
-                            try {
-                                const { data: employees, error } = await supabase
-                                    .from('employees')
-                                    .select('*')
-                                    .or(`name.ilike.%${searchTerm}%,extension.ilike.%${searchTerm}%,department.ilike.%${searchTerm}%`)
-                                    .limit(5);
+                        }
 
 
-                                if (error) throw error;
-
-                                if (employees && employees.length > 0) {
-                                    resultsContainer.innerHTML = '';
-                                    employees.forEach(employee => {
-                                        const resultItem = document.createElement('div');
-                                        resultItem.className = 'bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-lg result-fade';
-                                        resultItem.innerHTML = `
-                                            <h3 class="employee-name">${employee.name}</h3> 
-                                            <div class="employee-info">
-                                                <span class="employee-department">
-                                                    Setor: <span class="employee-department-value">${employee.department}</span>
-                                                
-                                                </span>
-    <span class="employee-email">
-                                                Email: <span class="employee-email-value">${employee.email}</span>
-                                                </span>
-                                                <span class="employee-extension">${employee.extension}</span>
-                                                
-                                            </div>
-                            `;
-                                        resultsContainer.appendChild(resultItem);
-                                    });
-                                    resultsContainer.classList.remove('hidden');
-                                    noResults.classList.add('hidden');
-                                } else {
-                                    resultsContainer.classList.add('hidden');
-                                    noResults.classList.remove('hidden');
+                        // ===== RAMAIS =====
+                        if (tipo === 'ramais') {
+                            dados = { name: nome, extension: ramal, department: setor, email: email };
+                            ({ error } = await supabase.from('employees').insert([dados]));
+                        } else {
+                            // ===== EVENTOS / ANIVERSARIANTES / FERIADOS / CESTAS =====
+                            let imagemUrl = '';
+                            if (tipo === 'eventos' && imagem) {
+                                // mantemos upload no storage para eventos (como antes)
+                                const { data: imagemData, error: imagemError } = await supabase.storage.from('eventos').upload(imagem.name, imagem);
+                                if (imagemError) {
+                                    alert('Erro ao fazer upload da imagem: ' + imagemError.message);
+                                    return;
                                 }
-                            } catch (err) {
-                                console.error('Erro na busca de ramais:', err);
-                                noResults.textContent = 'Ocorreu um erro na busca. Tente novamente.';
-                                noResults.classList.remove('hidden');
+                                imagemUrl = `${supabaseUrl}/storage/v1/object/public/eventos/${imagemData.path}`;
                             }
-                        };
 
-                        searchInput.addEventListener('input', debounce(searchRamais, 300));
-                        searchInput.addEventListener('keydown', (e) => {
-                            if (e.key === 'Enter') e.preventDefault();
-                        });
-
-                        window.addEventListener('DOMContentLoaded', () => {
-                            carregarDados('aniversariantes', 'aniversariantesList', 'Nenhum aniversariante encontrado.');
-                            carregarFeriados(); // nova função dedicada
-                            carregarEventos();
-                        });
-
-                    </script>
-                    <script
-                        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-
-                </div>
-
-                <script>
-                    async function carregarCalendarioCestas() {
-                        const { data, error } = await supabase.from('cestas').select();
+                            dados = { nome, data };
+                            if (tipo === 'eventos' && imagemUrl) dados.imagem_url = imagemUrl;
+                            ({ error } = await supabase.from(tipo).insert([dados]));
+                        }
 
                         if (error) {
-                            console.error("Erro ao carregar dados:", error);
+                            alert('Erro ao cadastrar: ' + error.message);
                             return;
                         }
 
-                        if (!data || data.length === 0) {
-                            console.warn("Nenhum registro encontrado em 'cestas'");
-                            return;
+                        alert('Cadastro realizado com sucesso!');
+                        // limpa campos comuns
+                        nomeInput.value = '';
+                        dataInput.value = '';
+                        if (imagemInput) imagemInput.value = '';
+                        carregarDados();
+                    });
+
+
+                    tipoInput.addEventListener('change', () => {
+                        const tipo = tipoInput.value;
+                        imagemEventoDiv.style.display = 'none';
+                        document.getElementById('dataField').style.display = 'none';
+                        document.getElementById('ramalFields').style.display = 'none';
+                        logoIdentidadeDiv.style.display = 'none';
+                        imagemIdentidadeDiv.style.display = 'none';
+
+                        if (tipo === 'eventos') {
+                            imagemEventoDiv.style.display = 'block';
+                            document.getElementById('dataField').style.display = 'block';
+                        } else if (tipo === 'ramais') {
+                            document.getElementById('ramalFields').style.display = 'block';
+                        } else if (tipo === 'identidade') {
+                            logoIdentidadeDiv.style.display = 'block';
+                            imagemIdentidadeDiv.style.display = 'block';
+                        } else {
+                            document.getElementById('dataField').style.display = 'block';
                         }
+                    });
 
-                        const hoje = new Date();
-                        const anoAtual = hoje.getFullYear();
-                        const mesAtual = hoje.getMonth(); // 0 = janeiro
-
-                        const primeiroDia = new Date(anoAtual, mesAtual, 1);
-                        const ultimoDia = new Date(anoAtual, mesAtual + 1, 0);
-
-                        const diasNoMes = ultimoDia.getDate();
-                        const diaSemanaInicio = primeiroDia.getDay(); // 0 = domingo
-
-                        const calendar = document.getElementById("calendar");
-                        calendar.innerHTML = "";
-
-                        // cabeçalho com dias da semana
-                        const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-                        diasSemana.forEach(dia => {
-                            const div = document.createElement("div");
-                            div.textContent = dia;
-                            div.className = "day header";
-                            calendar.appendChild(div);
-                        });
-
-                        // espaços em branco antes do 1º dia
-                        for (let i = 0; i < diaSemanaInicio; i++) {
-                            const div = document.createElement("div");
-                            div.className = "day empty";
-                            calendar.appendChild(div);
-                        }
-
-                        // converte datas do banco para Date
-                        const datasRetirada = [];
-                        data.forEach(item => {
-                            if (item.data) {
-                                try {
-                                    const dateStr = String(item.data).split("T")[0];
-                                    const [anoItem, mesItem, diaItem] = dateStr.split("-");
-                                    const d = new Date(Number(anoItem), Number(mesItem) - 1, Number(diaItem));
-                                    if (d.getMonth() === mesAtual && d.getFullYear() === anoAtual) {
-                                        datasRetirada.push(d);
-                                    }
-                                } catch (e) {
-                                    console.warn("Erro ao converter data:", item.data, e);
-                                }
-                            }
-                        });
-
-                        // monta os dias do calendário
-                        for (let dia = 1; dia <= diasNoMes; dia++) {
-                            const div = document.createElement("div");
-                            div.textContent = dia;
-                            div.className = "day";
-
-                            // destaca os dias que têm retirada
-                            if (datasRetirada.some(d => d.getDate() === dia)) {
-                                div.classList.add("highlight");
-                            }
-
-                            calendar.appendChild(div);
-                        }
-                    }
-
-                    document.addEventListener("DOMContentLoaded", carregarCalendarioCestas);
+                    // Inicialização
+                    adicionarFiltros();
+                    carregarDados();
                 </script>
 
-
-
-
-                <script>
-                    async function carregarLogotipo() {
-                        const { data, error } = await supabase
-                            .from("config_imagens_site")
-                            .select("logotipo")
-                            .eq("tipo", "logo_principal")
-                            .order("atualizado_em", { ascending: false })
-                            .limit(1)
-                            .maybeSingle(); // 👈 AQUI
-
-                        if (error) {
-                            console.error("Erro ao carregar logotipo:", error);
-                            return;
-                        }
-
-                        if (!data || !data.logotipo) {
-                            console.warn("Logotipo não encontrado.");
-                            return;
-                        }
-
-                        let logoBase64 = data.logotipo;
-
-                        if (!logoBase64.startsWith("data:image")) {
-                            logoBase64 = "data:image/png;base64," + logoBase64;
-                        }
-
-                        document.getElementById("logoPrincipal").src = logoBase64;
-                    }
-
-                    // Carrega automaticamente
-                    document.addEventListener("DOMContentLoaded", carregarLogotipo);
-                </script>
-
+                <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"></script>
 </body>
 
 </html>
