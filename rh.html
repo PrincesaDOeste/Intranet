@@ -141,10 +141,15 @@
                 </div>
 
                 <script>
-                    if (!window.supabaseClient) {
+                 
                         const supabaseUrl = 'https://woywqncdfuyworcbjjlv.supabase.co';
                         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXdxbmNkZnV5d29yY2Jqamx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMTUyNzgsImV4cCI6MjA2MDU5MTI3OH0.o63pZx8l8oe1aEYKEaYVQyHgEvR5FGkfAygTLTvWWVA';
-                        window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    
+                    if (!window.supabaseClient) {
+                        window.supabaseClient = window.supabase.createClient(
+                            supabaseUrl,
+                            supabaseKey
+                        );
                     }
 
                     var supabase = window.supabaseClient;
@@ -409,7 +414,7 @@
                                     alert('Erro ao fazer upload da imagem: ' + imagemError.message);
                                     return;
                                 }
-                                imagemUrl = `${supabaseUrl}/storage/v1/object/public/eventos/${imagemData.path}`;
+                               imagemUrl = `${supabaseUrl}/storage/v1/object/public/eventos/${imagemData.path}`;
                             }
 
                             dados = { nome, data };
