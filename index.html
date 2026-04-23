@@ -475,10 +475,10 @@
 
         .calendar .day {
             border: 1px solid #ccc;
-            padding: 10px;
+            padding: 0.2px;
             /* menor que antes */
             text-align: center;
-            border-radius: 6px;
+            border-radius: 2px;
             background: #f8f9fa;
             font-size: 12px;
             /* letras menores */
@@ -652,14 +652,14 @@
                             DDD.
                     </div>
                     <script>
-                         if (!window.supabaseClient) {
-        const supabaseUrl = 'https://woywqncdfuyworcbjjlv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXdxbmNkZnV5d29yY2Jqamx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMTUyNzgsImV4cCI6MjA2MDU5MTI3OH0.o63pZx8l8oe1aEYKEaYVQyHgEvR5FGkfAygTLTvWWVA';
-        window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-    }
+                        if (!window.supabaseClient) {
+                            const supabaseUrl = 'https://woywqncdfuyworcbjjlv.supabase.co';
+                            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXdxbmNkZnV5d29yY2Jqamx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMTUyNzgsImV4cCI6MjA2MDU5MTI3OH0.o63pZx8l8oe1aEYKEaYVQyHgEvR5FGkfAygTLTvWWVA';
+                            window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                        }
 
-    var supabase = window.supabaseClient;
-    
+                        var supabase = window.supabaseClient;
+
                         async function carregarDados(tabela, listaId, mensagem) {
                             try {
                                 // CORREÇÃO RAMAIS: se tabela for "ramais", use "employees"
@@ -858,7 +858,6 @@
                             });
                         });
 
-
                         async function carregarFeriados() {
                             try {
                                 const { data, error } = await supabase.from('feriados').select();
@@ -872,59 +871,44 @@
                                     return;
                                 }
 
-                                // Ordenar os feriados por data crescente, usando data local para evitar erro de fuso
-                                data.sort((a, b) => {
-                                    const [anoA, mesA, diaA] = a.data.split('T')[0].split('-');
-                                    const [anoB, mesB, diaB] = b.data.split('T')[0].split('-');
-                                    const dA = new Date(Number(anoA), Number(mesA) - 1, Number(diaA));
-                                    const dB = new Date(Number(anoB), Number(mesB) - 1, Number(diaB));
-                                    return dA - dB;
-                                });
-
                                 const hoje = new Date();
-                                const anoAtual = hoje.getFullYear();
-                                const hojeDiaMes = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 
-                                // Filtrar feriados que pertencem ao ano atual, criando data local
-                                const feriadosDoAno = data.filter(({ data }) => {
-                                    try {
-                                        const [ano, mes, dia] = data.split('T')[0].split('-');
-                                        const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
-                                        return !isNaN(d) && d.getFullYear() === anoAtual;
-                                    } catch {
-                                        return false;
-                                    }
-                                });
+                                // Converter e filtrar apenas feriados futuros (ou hoje)
+                                const feriadosFuturos = data
+                                    .map(item => {
+                                        const [ano, mes, dia] = item.data.split('T')[0].split('-');
+                                        const dataObj = new Date(Number(ano), Number(mes) - 1, Number(dia));
+                                        return {
+                                            nome: item.nome,
+                                            data: dataObj
+                                        };
+                                    })
+                                    .filter(f => f.data >= new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate())); // remove passados
 
-                                // Se não houver feriados no ano atual, mostra mensagem e retorna
-                                if (feriadosDoAno.length === 0) {
-                                    lista.innerHTML = '<li class="list-group-item" style="color: red; font-weight: bold;">NÃO HÁ FERIADOS PROGRAMADOS PARA ESTE ANO.</li>';
+                                if (feriadosFuturos.length === 0) {
+                                    lista.innerHTML = '<li class="list-group-item">NÃO HÁ PRÓXIMOS FERIADOS.</li>';
                                     return;
                                 }
 
-                                // Exibe todos os feriados do ano atual, formatando data local e destacando feriado de hoje
-                                feriadosDoAno.forEach(({ nome, data }) => {
-                                    try {
-                                        const [ano, mes, dia] = data.split('T')[0].split('-');
-                                        const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
-                                        if (!isNaN(d)) {
-                                            const dataFormatada = d.toLocaleDateString('pt-BR', {
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric'
-                                            }).toUpperCase();
-                                            const nomeUpper = nome.toUpperCase();
+                                // Ordenar por proximidade
+                                feriadosFuturos.sort((a, b) => a.data - b.data);
 
-                                            // Verifica se é feriado de hoje (somente dia e mês)
-                                            const feriadoDiaMes = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-                                            const classeHoje = (feriadoDiaMes === hojeDiaMes) ? 'aniversariante-hoje' : '';
+                                // Pegar o mais próximo
+                                const proximoFeriado = feriadosFuturos[0];
 
-                                            const item = `<li class="list-group-item ${classeHoje}">${dataFormatada} - ${nomeUpper}</li>`;
-                                            lista.innerHTML += item;
-                                        }
-                                    } catch (e) {
-                                        console.error("Erro ao formatar data:", e);
-                                    }
+                                feriadosFuturos.forEach(({ nome, data }) => {
+                                    const dataFormatada = data.toLocaleDateString('pt-BR');
+
+                                    // DESTACA O MAIS PRÓXIMO
+                                    const destaque = (data.getTime() === proximoFeriado.data.getTime()) ? 'feroje' : '';
+
+                                    const item = `
+                <li class="list-group-item ${destaque}">
+                    ${dataFormatada} - ${nome.toUpperCase()}
+                </li>
+            `;
+
+                                    lista.innerHTML += item;
                                 });
 
                             } catch (e) {
