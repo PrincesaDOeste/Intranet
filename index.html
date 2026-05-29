@@ -74,15 +74,48 @@
         }
 
         h1 {
-            color: #ffffff;
-            background-color: #0f1e6e;
-            text-align: center;
-            border-radius: 7px;
-            padding: 7px;
-            font-size: 20px;
-            font-family: Arial, sans-serif;
-            /* Define a fonte como Arial */
-        }
+    background: linear-gradient(
+        90deg,
+        #009c3b 0%,
+        #ffdf00 50%,
+        #002776 100%
+    );
+
+    color: #ffffff;
+
+    text-align: center;
+
+    border-radius: 14px;
+
+    padding: 12px 18px;
+
+    font-size: 22px;
+
+    font-family: Arial, sans-serif;
+
+    font-weight: bold;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.25),
+        0 0 12px rgba(255, 223, 0, 0.35);
+
+    
+
+    transition: all 0.35s ease;
+}
+
+/* efeito hover */
+h1:hover {
+    transform: scale(1.02);
+
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.35),
+        0 0 18px rgba(255, 223, 0, 0.55);
+}
 
         .Eventos {
             color: #0f1e6e;
@@ -545,6 +578,162 @@
             color: #ffffff;
             border-color: #ffffff;
         }
+
+        /* ===== CAMADA GERAL ===== */
+.copa-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+/* =========================================
+   ANIMAÇÃO PREMIUM COPA DO MUNDO
+========================================= */
+
+.copa-overlay {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* PARTÍCULAS */
+.particula-copa {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.18;
+    filter: blur(1px);
+
+    animation:
+        flutuar linear infinite,
+        brilho ease-in-out infinite;
+}
+
+/* cores */
+.particula-verde {
+    background: #00c853;
+}
+
+.particula-amarela {
+    background: #ffd600;
+}
+
+.particula-azul {
+    background: #2962ff;
+}
+
+/* movimento */
+@keyframes flutuar {
+
+    0% {
+        transform:
+            translateY(110vh)
+            translateX(0px)
+            scale(0.8);
+
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 0.18;
+    }
+
+    50% {
+        transform:
+            translateY(50vh)
+            translateX(40px)
+            scale(1);
+    }
+
+    100% {
+        transform:
+            translateY(-20vh)
+            translateX(-40px)
+            scale(1.2);
+
+        opacity: 0;
+    }
+}
+
+/* brilho suave */
+@keyframes brilho {
+
+    0% {
+        box-shadow: 0 0 8px rgba(255,255,255,0.1);
+    }
+
+    50% {
+        box-shadow:
+            0 0 18px rgba(255,255,255,0.45),
+            0 0 28px rgba(255,255,255,0.2);
+    }
+
+    100% {
+        box-shadow: 0 0 8px rgba(255,255,255,0.1);
+    }
+}
+
+
+/* ===== BOTÃO COPA DO MUNDO ===== */
+.btn-custom2 {
+    background: linear-gradient(
+        90deg,
+        #009c3b 0%,
+        #ffdf00 50%,
+        #002776 100%
+    );
+
+    color: #ffffff;
+
+    border: none;
+
+    border-radius: 14px;
+
+    padding: 12px 22px;
+
+    font-size: 15px;
+
+    font-family: Arial, sans-serif;
+
+    font-weight: bold;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.25),
+        0 0 12px rgba(255,223,0,0.35);
+
+
+    transition: all 0.35s ease;
+}
+
+/* ===== HOVER / TOQUE ===== */
+.btn-custom2:hover {
+    transform: scale(1.06);
+
+    color: #ffffff;
+
+    background: linear-gradient(
+        135deg,
+        #009c3b,
+        #ffdf00,
+        #002776
+    );
+
+    box-shadow:
+        0 6px 18px rgba(0,0,0,0.35),
+        0 0 18px rgba(255,223,0,0.55);
+}
     </style>
 </head>
 
@@ -565,6 +754,9 @@
 
                 <button class="btn btn-custom"
                     onclick="openFullPopup('https://www.marcosoft.com.br/rhonline/login.php')">Holerite</button>
+
+                      <button class="btn btn-custom2"
+                    onclick="openFullPopup('https://ge.globo.com/futebol/copa-do-mundo/')">Copa do Mundo 🏆</button>
 
                 <button class="btn btn-custom"
                     onclick="openFullPopup('https://www.princesadoeste.com.br/')">Instituição</button>
@@ -1239,7 +1431,9 @@
 
 
                 </script>
+    
+                    
 
 </body>
 
-</html>
+</html> 
