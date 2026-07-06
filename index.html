@@ -613,9 +613,9 @@
         </div>
 
         <div class="card" style="padding:0; overflow:hidden;">
-          <div id="carouselEventos" class="carousel slide" data-bs-ride="carousel">
+          <div id="carouselEventos" class="carousel slide">
             <div class="carousel-inner" id="carouselInner">
-              <div class="carousel-item active">
+              <div class="carousel-item active" data-bs-interval="12000">
                 <img src="https://placehold.co/900x380/0f1e6e/ffffff?text=Carregando+eventos..." alt="Carregando">
               </div>
             </div>
@@ -753,6 +753,7 @@ const db = window.supabaseClient;
     }
 
     /* ── EVENTOS ── */
+    const EVENTO_SLIDE_INTERVALO = 12000;
     let carouselInstance = null;
 
     async function carregarEventos() {
@@ -764,7 +765,7 @@ const db = window.supabaseClient;
         inner.innerHTML = '';
 
         if (!data || data.length === 0) {
-          inner.innerHTML = `<div class="carousel-item active">
+          inner.innerHTML = `<div class="carousel-item active" data-bs-interval="${EVENTO_SLIDE_INTERVALO}">
             <img src="https://placehold.co/900x380/0f1e6e/ffffff?text=Sem+eventos+cadastrados" alt="Sem eventos">
           </div>`;
           return;
@@ -778,7 +779,7 @@ const db = window.supabaseClient;
 
         data.forEach(({ id, imagem_url, nome }, i) => {
           inner.insertAdjacentHTML('beforeend', `
-            <div class="carousel-item ${i === 0 ? 'active' : ''}" data-id="${id}">
+            <div class="carousel-item ${i === 0 ? 'active' : ''}" data-id="${id}" data-bs-interval="${EVENTO_SLIDE_INTERVALO}">
               <div style="position:relative">
                 <button type="button" class="pause-btn" onclick="toggleCarousel(this,event)">⏸</button>
                 <img src="${imagem_url || 'https://placehold.co/900x380/0f1e6e/fff'}"
@@ -787,10 +788,16 @@ const db = window.supabaseClient;
             </div>`);
         });
 
-        carouselInstance = new bootstrap.Carousel(
-          document.getElementById('carouselEventos'),
-          { interval: 3500, ride: 'carousel', pause: false, wrap: true }
-        );
+        const carouselEl = document.getElementById('carouselEventos');
+        bootstrap.Carousel.getInstance(carouselEl)?.dispose();
+        carouselInstance?.dispose?.();
+        carouselInstance = new bootstrap.Carousel(carouselEl, {
+          interval: EVENTO_SLIDE_INTERVALO,
+          ride: 'carousel',
+          pause: false,
+          wrap: true,
+          touch: true
+        });
       } catch (e) { console.error('Eventos:', e.message); }
     }
 

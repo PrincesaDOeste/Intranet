@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda de Salas - Intranet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --light: #ecf0f1;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        .room-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-day.today {
+            border: 2px solid var(--accent);
+        }
+
+        .time-slot.reserved {
+            background-color: rgba(231, 76, 60, 0.2);
+            border-left: 4px solid var(--danger);
+        }
+
+        .time-slot.available {
+            background-color: rgba(46, 204, 113, 0.2);
+            border-left: 4px solid var(--success);
+        }
+
+        .overlay {
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="bg-white p-3 rounded-lg shadow">
+                        <img src="https://placehold.co/60x60"
+                            alt="Logotipo corporativo minimalista em azul escuro com ícone de edifício" />
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">Agenda de Salas</h1>
+                        <p class="text-gray-600">Gerencie as reservas das salas de reunião</p>
+                    </div>
+                </div>
+                <button id="newBookingBtn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                    Nova Reserva
+                </button>
+            </div>
+        </header>
+
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+            <div class="p-4 border-b border-gray-200 bg-gray-50">
+                <div class="flex flex-col md:flex-row justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <button id="prevPeriod" class="p-2 rounded-lg hover:bg-gray-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <h2 id="periodTitle" class="text-xl font-semibold text-gray-800">Semana de 10/04 a 16/04</h2>
+                        <button id="nextPeriod" class="p-2 rounded-lg hover:bg-gray-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button data-view="day"
+                            class="view-toggle px-4 py-1 rounded-lg border hover:bg-gray-100">Dia</button>
+                        <button data-view="week"
+                            class="view-toggle px-4 py-1 rounded-lg border bg-blue-100 border-blue-200 text-blue-700">Semana</button>
+                        <button data-view="month"
+                            class="view-toggle px-4 py-1 rounded-lg border hover:bg-gray-100">Mês</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="p-4 border-b border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Localização</label>
+                        <select class="w-full rounded-lg border-gray-300">
+                            <option>Todos</option>
+                            <option>Andar 1</option>
+                            <option>Andar 2</option>
+                            <option>Andar 3</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Capacidade</label>
+                        <select class="w-full rounded-lg border-gray-300">
+                            <option>Todos</option>
+                            <option>Até 4 pessoas</option>
+                            <option>5-8 pessoas</option>
+                            <option>9+ pessoas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Equipamentos</label>
+                        <select class="w-full rounded-lg border-gray-300">
+                            <option>Todos</option>
+                            <option>Videoconferência</option>
+                            <option>Quadro branco</option>
+                            <option>Projetor</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select class="w-full rounded-lg border-gray-300">
+                            <option>Todos</option>
+                            <option>Disponível</option>
+                            <option>Reservada</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualização Semanal -->
+            <div id="weekView" class="p-2 overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-left">
+                            <th class="w-48 px-4 py-2 text-gray-600 font-medium border-r">Salas</th>
+                            <th class="px-4 py-2 text-gray-600 font-medium border-r">Segunda</th>
+                            <th class="px-4 py-2 text-gray-600 font-medium border-r">Terça</th>
+                            <th class="px-4 py-2 text-gray-600 font-medium border-r">Quarta</th>
+                            <th class="px-4 py-2 text-gray-600 font-medium border-r">Quinta</th>
+                            <th class="px-4 py-2 text-gray-600 font-medium border-r">Sexta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="px-4 py-3 font-medium border-r align-top">
+                                <div class="flex items-center gap-2">
+                                    <img src="https://placehold.co/40x40"
+                                        alt="Foto da Sala de Reunião 1 - Sala moderna com mesa oval e cadeiras pretas"
+                                        class="rounded" />
+                                    <div>
+                                        <div>Sala 101</div>
+                                        <div class="text-xs text-gray-500">Capacidade: 6</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-1 py-1 border-r border-t h-24">
+                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
+                                    <div class="font-medium">Apresentação</div>
+                                    <div>08:00 - 09:30</div>
+                                    <div class="text-xs">João Silva</div>
+                                </div>
+                                <div
+                                    class="time-slot available px-2 py-1 mb-1 rounded text-xs cursor-pointer hover:bg-green-100">
+                                    Disponível <br>14:00 - 16:00
+                                </div>
+                            </td>
+                            <td class="px-1 py-1 border-r border-t h-24">
+                                <div
+                                    class="time-slot available px-2 py-1 mb-1 rounded text-xs cursor-pointer hover:bg-green-100">
+                                    Disponível <br>09:00 - 12:00
+                                </div>
+                            </td>
+                            <td class="px-1 py-1 border-r border-t h-24">
+                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
+                                    <div class="font-medium">Reunião Depto</div>
+                                    <div>10:00 - 12:00</div>
+                                    <div class="text-xs">Maria Souza</div>
+                                </div>
+                            </td>
+                            <td class="px-1 py-1 border-r border-t h-24"></td>
+                            <td class="px-1 py-1 border-t h-24">
+                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
+                                    <div class="font-medium">Workshop</div>
+                                    <div>13:30 - 17:00</div>
+                                    <div class="text-xs">Carlos Mendes</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-medium border-r align-top">
+                                <div class="flex items-center gap-2">
+                                    <img src="https://placehold.co/40x40"
+                                        alt="Foto da Sala de Reunião 2 - Sala de videoconferência com TV grande"
+                                        class="rounded" />
+                                    <div>
+                                        <div>Sala 201</div>
+                                        <div class="text-xs text-gray-500">Capacidade: 8</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-1 py-1 border-r border-t h-24">
+                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
+                                    <div class="font-medium">Videoconf.</div>
+                                    <div>09:00 - 11:00</div>
+                                    <div class="text-xs">Ana Paula</div>
+                                </div>
+                            </td>
+                            <td class="px-1 py-1 border-r border-t h-24"></td>
+                            <td class="px-1 py-1 border-r border-t h-24">
+                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
+                                    <div class="font-medium">Treinamento</div>
+                                    <div>14:00 - 18:00</div>
+                                    <div class="text-xs">Paula Gomes</div>
+                                </div>
+                            </td>
+                            <td class="px-1 py-1 border-r border-t h-24">
+                                <div
+                                    class="time-slot available px-2 py-1 mb-1 rounded text-xs cursor-pointer hover:bg-green-100">
+                                    Disponível <br>10:00 - 12:00
+                                </div>
+                            </td>
+                            <td class="px-1 py-1 border-t h-24"></td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-medium border-r align-top">
+                                <div class="flex items-center gap-2">
+                                    <img src="https://placehold.co/40x40"
+                                        alt="Foto da Sala de Reunião 3 - Sala de brainstorming com quadro branco e puffes coloridos"
+                                        class="rounded" />
+                                    <div>
+                                        <div>Sala 301</div>
+                                        <div class="text-xs text-gray-500">Capacidade: 4</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-1 py-1 border-r border-t h-24">
+                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
+                                    <div class="font-medium">1:1</div>
+                                    <div>15:00 - 16:00</div>
+                                    <div class="text-xs">Roberto Alves</div>
+                                </div>
+                            </td>
+                            <td class="px-1 py-1 border-r border-t h-24">
+                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
+                                    <div class="font-medium">1:1</div>
+                                    <div>11:00 - 12:00</div>
+                                    <div class="text-xs">Roberto Alves</div>
+                                </div>
+                            </td>
+                            <td class="px-1 py-1 border-r border-t h-24">
+                                <div
+                                    class="time-slot available px-2 py-1 mb-1 rounded text-xs cursor-pointer hover:bg-green-100">
+                                    Disponível <br>08:00 - 10:00
+                                </div>
+                                <div
+                                    class="time-slot available px-2 py-1 mb-1 rounded text-xs cursor-pointer hover:bg-green-100">
+                                    Disponível <br>16:00 - 18:00
+                                </div>
+                            </td>
+                            <td class="px-1 py-1 border-r border-t h-24"></td>
+                            <td class="px-1 py-1 border-t h-24"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Visualização Mensal (oculta inicialmente) -->
+            <div id="monthView" class="hidden p-4">
+                <div class="grid grid-cols-7 gap-1 text-sm">
+                    <div class="font-medium text-center py-2 text-gray-700">Dom</div>
+                    <div class="font-medium text-center py-2 text-gray-700">Seg</div>
+                    <div class="font-medium text-center py-2 text-gray-700">Ter</div>
+                    <div class="font-medium text-center py-2 text-gray-700">Qua</div>
+                    <div class="font-medium text-center py-2 text-gray-700">Qui</div>
+                    <div class="font-medium text-center py-2 text-gray-700">Sex</div>
+                    <div class="font-medium text-center py-2 text-gray-700">Sáb</div>
+
+                    <div class="p-2 h-24 bg-gray-50"></div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">1</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">2</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">3</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">4</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">5</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">6</div>
+
+                    <div class="p-2 h-24 border hover:bg-gray-50">7</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">8</div>
+                    <div class="p-2 h-24 border today hover:bg-blue-50">9</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">10</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">11</div>
+                    <div class="p-2 h-24 border bg-red-50">12<div class="text-xs mt-1 text-red-500">3 reservas</div>
+                    </div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">13</div>
+
+                    <div class="p-2 h-24 border hover:bg-gray-50">14</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">15</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">16</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">17</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">18</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">19</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">20</div>
+
+                    <div class="p-2 h-24 border hover:bg-gray-50">21</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">22</div>
+                    <div class="p-2 h-24 border bg-blue-50">23<div class="text-xs mt-1 text-blue-500">2 reservas</div>
+                    </div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">24</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">25</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">26</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">27</div>
+
+                    <div class="p-2 h-24 border hover:bg-gray-50">28</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">29</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">30</div>
+                    <div class="p-2 h-24 border hover:bg-gray-50">31</div>
+                    <div class="p-2 h-24 bg-gray-50"></div>
+                    <div class="p-2 h-24 bg-gray-50"></div>
+                    <div class="p-2 h-24 bg-gray-50"></div>
+                </div>
+            </div>
+
+            <!-- Visualização Diária (oculta inicialmente) -->
+            <div id="dayView" class="hidden p-4">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Segunda-feira, 10 de Abril</h3>
+                <div class="space-y-2">
+                    <div class="bg-white rounded-lg border p-4 flex justify-between">
+                        <div>
+                            <div class="font-medium">Sala 101</div>
+                            <div class="text-sm text-gray-600">08:00 - 09:30</div>
+                        </div>
+                        <div>
+                            <div class="font-medium">Apresentação</div>
+                            <div class="text-sm text-gray-600">João Silva</div>
+                        </div>
+                        <button class="text-blue-600 hover:text-blue-800">Detalhes</button>
+                    </div>
+                    <div class="bg-white rounded-lg border p-4 flex justify-between">
+                        <div>
+                            <div class="font-medium">Sala 201</div>
+                            <div class="text-sm text-gray-600">09:00 - 11:00</div>
+                        </div>
+                        <div>
+                            <div class="font-medium">Videoconferência</div>
+                            <div class="text-sm text-gray-600">Ana Paula</div>
+                        </div>
+                        <button class="text-blue-600 hover:text-blue-800">Detalhes</button>
+                    </div>
+                    <div class="bg-white rounded-lg border p-4 flex justify-between">
+                        <div>
+                            <div class="font-medium">Sala 301</div>
+                            <div class="text-sm text-gray-600">15:00 - 16:00</div>
+                        </div>
+                        <div>
+                            <div class="font-medium">1:1</div>
+                            <div class="text-sm text-gray-600">Roberto Alves</div>
+                        </div>
+                        <button class="text-blue-600 hover:text-blue-800">Detalhes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+            <div class="p-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-medium text-gray-800">Salas Disponíveis</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+                <div class="room-card bg-white rounded-lg border overflow-hidden transition-all hover:shadow-md">
+                    <div class="relative h-40">
+                        <img src="https://placehold.co/600x400"
+                            alt="Sala de reunião 101 - Mesa de reunião oval com cadeiras estofadas em tecido cinza"
+                            class="w-full h-full object-cover" />
+                        <div class="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded">Disponível
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-medium text-lg mb-1">Sala 101</h4>
+                        <div class="text-gray-600 text-sm mb-2">Andar 1 • Capacidade: 6 pessoas</div>
+                        <div class="flex flex-wrap gap-1 mb-3">
+                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Videoconferência</span>
+                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Projetor</span>
+                        </div>
+                        <button
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+                            Reservar Agora
+                        </button>
+                    </div>
+                </div>
+                <div class="room-card bg-white rounded-lg border overflow-hidden transition-all hover:shadow-md">
+                    <div class="relative h-40">
+                        <img src="https://placehold.co/600x400" alt="Sala de reunião 201 - Espaço moderno com TV 65"
+                            class="w-full h-full object-cover" />
+                        <div class="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded">Disponível
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-medium text-lg mb-1">Sala 201</h4>
+                        <div class="text-gray-600 text-sm mb-2">Andar 2 • Capacidade: 8 pessoas</div>
+                        <div class="flex flex-wrap gap-1 mb-3">
+                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Videoconferência</span>
+                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">TV 65"</span>
+                        </div>
+                        <button
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+                            Reservar Agora
+                        </button>
+                    </div>
+                </div>
+                <div class="room-card bg-white rounded-lg border overflow-hidden transition-all hover:shadow-md">
+                    <div class="relative h-40">
+                        <img src="https://placehold.co/600x400"
+                            alt="Sala de reunião 301 - Espaço criativo com quadro branco e puffes coloridos"
+                            class="w-full h-full object-cover" />
+                        <div class="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded">Ocupada
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-medium text-lg mb-1">Sala 301</h4>
+                        <div class="text-gray-600 text-sm mb-2">Andar 3 • Capacidade: 4 pessoas</div>
+                        <div class="flex flex-wrap gap-1 mb-3">
+                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Quadro branco</span>
+                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Flip chart</span>
+                        </div>
+                        <button disabled
+                            class="w-full bg-gray-300 text-gray-600 py-2 rounded-lg text-sm font-medium cursor-not-allowed">
+                            Indisponível
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Nova Reserva -->
+        <div id="newBookingModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+            <div class="overlay absolute inset-0 bg-black opacity-50"></div>
+            <div class="relative bg-white rounded-lg max-w-2xl w-full mx-auto my-8 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Nova Reserva de Sala</h3>
+                    <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <form id="bookingForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Salas Disponíveis</label>
+                            <select id="roomSelect" class="w-full rounded-lg border-gray-300">
+                                <option value="101">Sala 101 - Capacidade: 6</option>
+                                <option value="201">Sala 201 - Capacidade: 8</option>
+                                <option value="301">Sala 301 - Capacidade: 4</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+                            <input type="date" id="bookingDate" class="w-full rounded-lg border-gray-300" />
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Hora Início</label>
+                            <input type="time" id="startTime" class="w-full rounded-lg border-gray-300" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Hora Fim</label>
+                            <input type="time" id="endTime" class="w-full rounded-lg border-gray-300" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Título da Reunião</label>
+                        <input type="text" id="meetingTitle" placeholder="Ex: Reunião com cliente X"
+                            class="w-full rounded-lg border-gray-300" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                        <textarea id="meetingDescription" rows="3" placeholder="Detalhes sobre a reunião..."
+                            class="w-full rounded-lg border-gray-300"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Participantes</label>
+                        <input type="text" id="participants" placeholder="Adicione participantes..."
+                            class="w-full rounded-lg border-gray-300" />
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4">
+                        <button type="button" id="cancelBookingBtn"
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Cancelar</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Confirmar
+                            Reserva</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+   <script>
+    // Define as credenciais do Supabase
+    const supabaseUrl = 'https://woywqncdfuyworcbjjlv.supabase.co';
+    const supabaseKey = '...'; // Chave secreta de acesso ao Supabase
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Aguarda o carregamento completo do DOM
+    document.addEventListener('DOMContentLoaded', function () {
+        // === SEÇÃO: Alternância de visualização (Semana, Mês, Dia) ===
+        const viewToggles = document.querySelectorAll('.view-toggle'); // Botões para mudar visualização
+        const weekView = document.getElementById('weekView');
+        const monthView = document.getElementById('monthView');
+        const dayView = document.getElementById('dayView');
+
+        // Adiciona comportamento aos botões de visualização
+        viewToggles.forEach(toggle => {
+            toggle.addEventListener('click', function () {
+                // Remove estilo ativo de todos os botões
+                viewToggles.forEach(t => t.classList.remove('bg-blue-100', 'border-blue-200', 'text-blue-700'));
+
+                // Aplica estilo ao botão clicado
+                this.classList.add('bg-blue-100', 'border-blue-200', 'text-blue-700');
+
+                // Oculta todas as visualizações
+                weekView.classList.add('hidden');
+                monthView.classList.add('hidden');
+                dayView.classList.add('hidden');
+
+                // Exibe a visualização correspondente
+                const view = this.dataset.view;
+                if (view === 'week') weekView.classList.remove('hidden');
+                else if (view === 'month') monthView.classList.remove('hidden');
+                else if (view === 'day') dayView.classList.remove('hidden');
+            });
+        });
+
+        // === SEÇÃO: Abertura e fechamento do modal de nova reserva ===
+        const newBookingBtn = document.getElementById('newBookingBtn'); // Botão para nova reserva
+        const closeModalBtn = document.getElementById('closeModalBtn'); // Botão de fechar modal
+        const cancelBookingBtn = document.getElementById('cancelBookingBtn'); // Botão cancelar
+        const newBookingModal = document.getElementById('newBookingModal'); // Modal
+
+        // Abre o modal ao clicar no botão
+        newBookingBtn.addEventListener('click', function () {
+            newBookingModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden'); // Evita scroll da página
+        });
+
+        // Função para fechar o modal
+        function closeModal() {
+            newBookingModal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // Fecha o modal ao clicar nos botões de fechar ou cancelar
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelBookingBtn.addEventListener('click', closeModal);
+
+        // Fecha o modal ao clicar fora da área de conteúdo (overlay)
+        newBookingModal.addEventListener('click', function (e) {
+            if (e.target.classList.contains('overlay')) {
+                closeModal();
+            }
+        });
+
+        // === SEÇÃO: Navegação dinâmica por semanas (2025 a 2035) ===
+        const prevPeriodBtn = document.getElementById('prevPeriod'); // Botão semana anterior
+        const nextPeriodBtn = document.getElementById('nextPeriod'); // Botão próxima semana
+        const periodTitle = document.getElementById('periodTitle'); // Elemento com o texto da semana
+
+        const startDate = new Date('2025-01-06'); // Data inicial (segunda-feira)
+        const endDate = new Date('2035-12-31'); // Data final
+        let currentStartDate = new Date(startDate); // Data de referência atual
+
+        // Formata a data como DD/MM/AAAA
+        function formatDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // Atualiza o título com o intervalo da semana
+        function updatePeriodTitle() {
+            const weekEnd = new Date(currentStartDate);
+            weekEnd.setDate(weekEnd.getDate() + 6); // Soma 6 dias para obter o domingo
+            if (weekEnd > endDate) return; // Impede passar do limite final
+            const start = formatDate(currentStartDate);
+            const end = formatDate(weekEnd);
+            periodTitle.textContent = `Semana de ${start} a ${end}`;
+        }
+
+        // Botão para voltar uma semana
+        prevPeriodBtn.addEventListener('click', function () {
+            const prevWeek = new Date(currentStartDate);
+            prevWeek.setDate(prevWeek.getDate() - 7);
+            if (prevWeek >= startDate) {
+                currentStartDate = prevWeek;
+                updatePeriodTitle();
+            }
+        });
+
+        // Botão para avançar uma semana
+        nextPeriodBtn.addEventListener('click', function () {
+            const nextWeek = new Date(currentStartDate);
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            if (nextWeek <= endDate) {
+                currentStartDate = nextWeek;
+                updatePeriodTitle();
+            }
+        });
+
+        updatePeriodTitle(); // Mostra a primeira semana ao carregar a página
+
+        // === SEÇÃO: Clique em um horário disponível para abrir o modal ===
+        const availableSlots = document.querySelectorAll('.time-slot.available');
+        availableSlots.forEach(slot => {
+            slot.addEventListener('click', function () {
+                newBookingModal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            });
+        });
+
+        // === SEÇÃO: Envio do formulário de reserva ===
+        document.getElementById('bookingForm').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Impede recarregar a página
+
+            // Coleta os valores dos campos do formulário
+            const roomId = document.getElementById('roomSelect').value;
+            const bookingDate = document.getElementById('bookingDate').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const title = document.getElementById('meetingTitle').value;
+            const description = document.getElementById('meetingDescription').value;
+            const participants = document.getElementById('participants').value.split(','); // Separa por vírgula
+
+            const startDateTime = `${bookingDate}T${startTime}:00`;
+            const endDateTime = `${bookingDate}T${endTime}:00`;
+
+            // Insere os dados no banco Supabase
+            const { data, error } = await supabase
+                .from('reservations')
+                .insert([
+                    {
+                        room_id: roomId,
+                        usuario_id: null, // Pode ser ajustado se você tiver login
+                        start_time: startDateTime,
+                        end_time: endDateTime,
+                        title,
+                        description,
+                        participants
+                    }
+                ]);
+
+            // Exibe mensagem de erro ou sucesso
+            if (error) {
+                console.error('Erro ao criar reserva:', error);
+                alert('Erro ao criar reserva. Tente novamente.');
+            } else {
+                alert('Reserva criada com sucesso!');
+                closeModal(); // Fecha o modal após sucesso
+            }
+        });
+    });
+</script>
+
+
+</body>
+
+</html>
