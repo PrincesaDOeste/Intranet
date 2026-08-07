@@ -5,9 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastrar Usuário</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #0f1e6e;
+            --navy-mid: #1a2f88;
+            --teal: #05afaf;
+            --teal-dark: #038a8a;
+            --bg: #f4f6fb;
+            --border: #e2e4ed;
+            --text-1: #0d1340;
+            --text-2: #4a5380;
+            --radius-sm: 6px;
+            --radius-lg: 14px;
+            --shadow-sm: 0 1px 3px rgba(15,30,110,.06), 0 1px 2px rgba(15,30,110,.04);
+        }
+        body { min-height: 100vh; margin: 0; background: var(--bg); color: var(--text-1); font-family: 'DM Sans', sans-serif; }
+        .topbar { height: 66px; display: flex; align-items: center; gap: 20px; padding: 0 28px; background: var(--navy); border-bottom: 1px solid var(--navy-mid); }
+        .topbar__logo img { height: 50px; width: auto; display: block; background: #fff; border-radius: var(--radius-sm); padding: 6px 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+        .topbar__logo-placeholder { height: 50px; display: flex; align-items: center; color: #fff; font-weight: 600; }
+        .topbar__logo-placeholder em { color: var(--teal); font-style: normal; }
+        .topbar__divider { width: 1px; height: 24px; background: rgba(255,255,255,.15); }
+        .topbar__title { color: rgba(255,255,255,.65); font-size: 12px; letter-spacing: .6px; text-transform: uppercase; }
+        .admin-page { max-width: 1180px; padding: 28px 24px 48px; }
+        .admin-card, .table-wrap { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 24px; }
+        h2 { color: var(--navy); font-weight: 600; }
+        label { color: var(--text-2); font-weight: 500; }
+        .form-control { border-color: var(--border); border-radius: var(--radius-sm); }
+        .form-control:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(5,175,175,.12); }
+        .btn-primary, .btn-info { background: var(--teal); border-color: var(--teal); color: #fff; }
+        .btn-primary:hover, .btn-info:hover { background: var(--teal-dark); border-color: var(--teal-dark); color: #fff; }
+        .btn-secondary { background: var(--navy); border-color: var(--navy); }
+        .table thead th { color: var(--navy); border-top: 0; }
+    </style>
 </head>
 <body>
-    <div class="container">
+    <header class="topbar">
+        <div class="topbar__logo">
+            <img id="logoPrincipal" src="" alt="Logo" style="display:none;">
+            <div class="topbar__logo-placeholder" id="logoPlaceholder">
+                <span>Portal <em>Intranet</em></span>
+            </div>
+        </div>
+        <div class="topbar__divider"></div>
+        <span class="topbar__title">Portal de Comunicação</span>
+    </header>
+
+    <div class="container admin-page">
         <div class="d-flex justify-content-between align-items-center mt-3">
             <h2>Cadastro de Novo Usuário</h2>
             <div>
@@ -18,7 +62,7 @@
 
         <div class="row justify-content-center">
             <div class="col-md-6">
-                <form id="cadastro-form" class="mt-3">
+                <form id="cadastro-form" class="mt-3 admin-card">
                     <div class="form-group">
                         <label for="username">Nome de Usuário</label>
                         <input type="text" id="username" class="form-control" placeholder="Nome de usuário" required>
@@ -35,7 +79,8 @@
         <h2 class="mt-5">Usuários Cadastrados</h2>
         <div class="row">
             <div class="col-md-12">
-                <table class="table table-striped mt-3">
+                <div class="table-wrap mt-3">
+                <table class="table table-striped mb-0">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -48,6 +93,7 @@
                         <!-- Usuários serão carregados aqui -->
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -60,6 +106,21 @@
             const supabaseUrl = 'https://woywqncdfuyworcbjjlv.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXdxbmNkZnV5d29yY2Jqamx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMTUyNzgsImV4cCI6MjA2MDU5MTI3OH0.o63pZx8l8oe1aEYKEaYVQyHgEvR5FGkfAygTLTvWWVA';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            async function carregarLogotipo() {
+                const { data } = await supabase
+                    .from('config_imagens_site')
+                    .select('logotipo')
+                    .eq('tipo', 'logo_principal')
+                    .order('atualizado_em', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                if (!data || !data.logotipo) return;
+                const img = document.getElementById('logoPrincipal');
+                img.src = data.logotipo.startsWith('data:image') ? data.logotipo : 'data:image/png;base64,' + data.logotipo;
+                img.style.display = 'block';
+                document.getElementById('logoPlaceholder').style.display = 'none';
+            }
 
             // Função para carregar usuários
             async function carregarUsuarios() {
@@ -126,6 +187,7 @@
             });
 
             // Carrega os usuários ao iniciar a página
+            carregarLogotipo();
             carregarUsuarios();
 
             // Torna a função disponível no escopo global

@@ -160,7 +160,7 @@
     }
 
     .grid-main > div:first-child > .card {
-      flex: 1;
+      flex: initial;
       display: flex;
     }
 
@@ -207,15 +207,90 @@
     }
     .card__body { padding: 16px 18px; }
 
+    .identity-section {
+      margin-bottom: 20px;
+    }
+
+    .identity-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(16px, 1.4vw, 24px);
+    }
+
+    .identity-card {
+      min-height: 132px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-top: 3px solid var(--teal);
+    }
+
+    .identity-card__head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .identity-card__icon {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--teal-light);
+      color: var(--teal-dark);
+    }
+
+    .identity-card__icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+    }
+
+    .identity-card__title {
+      margin: 0;
+      color: var(--navy);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .identity-card__text {
+      margin: 0;
+      color: var(--text-2);
+      font-size: 13px;
+      line-height: 1.38;
+    }
+
+    .identity-values {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .identity-values li {
+      color: var(--text-2);
+      font-size: 12.5px;
+      line-height: 1.32;
+    }
+
+    .identity-values strong {
+      color: var(--navy);
+      font-weight: 700;
+    }
+
     /* ── CARROSSEL ────────────────────────────────── */
     #carouselEventos,
     #carouselEventos .carousel-inner,
     #carouselEventos .carousel-item {
-      height: 100%;
+      height: clamp(360px, 32vw, 560px);
     }
 
     #carouselEventos {
-      flex: 1;
       width: 100%;
     }
 
@@ -494,6 +569,74 @@
     }
 
     /* ── SCROLL SUAVE ─────────────────────────────── */
+    .menu-popup {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background: rgba(9,20,80,.72);
+      backdrop-filter: blur(4px);
+    }
+    .menu-popup.open { display: flex; }
+    .menu-popup__dialog {
+      width: min(94vw, 1180px);
+      max-height: 90vh;
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 60px rgba(9,20,80,.28);
+      overflow: hidden;
+    }
+    .menu-popup__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 16px;
+      background: var(--navy);
+      color: #fff;
+    }
+    .menu-popup__title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+    }
+    .menu-popup__close {
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 50%;
+      background: transparent;
+      color: #fff;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .menu-popup__body {
+      max-height: calc(90vh - 56px);
+      overflow: auto;
+      background: var(--bg);
+      padding: 14px;
+    }
+    .menu-popup__image {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: #fff;
+      border-radius: var(--radius-sm);
+    }
+    .menu-popup__empty {
+      padding: 34px 18px;
+      text-align: center;
+      color: var(--text-2);
+      font-size: 14px;
+      background: #fff;
+      border-radius: var(--radius-sm);
+    }
+
     * { scroll-behavior: smooth; }
 
     /* ── ANIMAÇÃO ENTRADA ─────────────────────────── */
@@ -523,15 +666,16 @@
         grid-template-columns: 1fr;
         align-items: start;
       }
+      .identity-grid { grid-template-columns: 1fr; }
       .grid-main > div:first-child > .card { flex: initial; }
       #carouselEventos,
       #carouselEventos .carousel-inner,
       #carouselEventos .carousel-item {
-        height: auto;
+        height: clamp(320px, 45vw, 460px);
       }
       #carouselEventos .carousel-item img {
-        height: auto;
-        object-fit: initial;
+        height: 100%;
+        object-fit: fill;
       }
     }
 
@@ -548,7 +692,13 @@
         padding-bottom: 2px;
       }
       .page { width: min(94vw, 640px); }
-      #carouselEventos .carousel-item img { height: auto; }
+      #carouselEventos,
+      #carouselEventos .carousel-inner,
+      #carouselEventos .carousel-item {
+        height: clamp(260px, 58vw, 360px);
+      }
+      #carouselEventos .carousel-item img { height: 100%; }
+      .identity-card { padding: 18px; min-height: 0; }
       .tabs-row {
         overflow-x: auto;
         padding: 0 12px;
@@ -576,14 +726,13 @@
         onclick="openFullPopup('https://docs.google.com/forms/d/e/1FAIpQLSeq-lALEzem1qXk07OHUT_eikIEHPvTC4UOyZoKfejA-C4cog/viewform')">
         De olho na frota
       </button>
-     <button class="btn-top"
-        onclick="window.open('https://conectaprincesadoeste.lovable.app/', '_blank', 'noopener,noreferrer')">
-    Conecta
-</button>
+      <button class="btn-top"
+        onclick="abrirCardapioPopup()">
+        Cardápio
       </button>
       <button class="btn-top"
-        onclick="openFullPopup('https://www.princesadoeste.com.br/cardapio-2/')">
-        Cardápio
+        onclick="openFullPopup('Sala_de_reuni%C3%A3o.Html')">
+        Sala de reuni&atilde;o
       </button>
       <button class="btn-top"
         onclick="openFullPopup('https://www.marcosoft.com.br/rhonline/login.php')">
@@ -706,17 +855,80 @@
 
       </div><!-- /col direita -->
     </div><!-- /grid -->
+
+    <section class="identity-section" aria-label="Missão, visão e valores">
+      <div class="section-label">
+        <span class="section-label__text">Missão, Visão e Valores</span>
+        <span class="section-label__line"></span>
+      </div>
+
+      <div class="identity-grid">
+        <article class="card identity-card">
+          <div class="identity-card__head">
+            <span class="identity-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"></circle>
+                <circle cx="12" cy="12" r="5"></circle>
+                <path d="M12 12l7-7"></path>
+                <path d="M16 5h3v3"></path>
+              </svg>
+            </span>
+            <h2 class="identity-card__title">Missão</h2>
+          </div>
+          <p class="identity-card__text">Levar pessoas com segurança, conforto e confiança.</p>
+        </article>
+
+        <article class="card identity-card">
+          <div class="identity-card__head">
+            <span class="identity-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </span>
+            <h2 class="identity-card__title">Visão</h2>
+          </div>
+          <p class="identity-card__text">Ser referência em transporte de fretamento, inspirando confiança e transformando vidas com soluções rentáveis, inovadoras e sustentáveis.</p>
+        </article>
+
+        <article class="card identity-card">
+          <div class="identity-card__head">
+            <span class="identity-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 21V5"></path>
+                <path d="M4 5c4-2 8 2 12 0 1-.5 2-.8 4-.8v10c-2 0-3 .3-4 .8-4 2-8-2-12 0"></path>
+              </svg>
+            </span>
+            <h2 class="identity-card__title">Valores</h2>
+          </div>
+          <ul class="identity-values">
+            <li><strong>Eficiência</strong> - Agimos com foco, agilidade e excelência operacional.</li>
+            <li><strong>Compromisso</strong> - Honramos nossos acordos e cuidamos das relações com seriedade.</li>
+            <li><strong>Integridade</strong> - Atuamos com ética, transparência e respeito.</li>
+            <li><strong>Responsabilidade</strong> - Assumimos com coragem as consequências de nossas escolhas e agimos com foco no bem comum.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
   </main>
+
+  <div class="menu-popup" id="cardapioPopup" role="dialog" aria-modal="true" aria-labelledby="cardapioPopupTitle">
+    <div class="menu-popup__dialog">
+      <div class="menu-popup__header">
+        <span class="menu-popup__title" id="cardapioPopupTitle">Cardápio</span>
+        <button type="button" class="menu-popup__close" onclick="fecharCardapioPopup()" aria-label="Fechar">×</button>
+      </div>
+      <div class="menu-popup__body" id="cardapioPopupBody">
+        <div class="menu-popup__empty">Carregando cardápio...</div>
+      </div>
+    </div>
+  </div>
 
   <!-- ── SCRIPTS ────────────────────────────────── -->
   <script>
     function openFullPopup(url, w, h) {
-      w = w || screen.width;
-      h = h || screen.height;
-      const l = (screen.width  - w) / 2;
-      const t = (screen.height - h) / 2;
-      window.open(url, '_blank',
-        `width=${w},height=${h},top=${t},left=${l},scrollbars=yes,resizable=yes`);
+      window.open(url, '_blank');
     }
 
    /* ── SUPABASE ── */
@@ -728,6 +940,46 @@ if (!window.supabaseClient) {
 }
 
 const db = window.supabaseClient;
+
+async function abrirCardapioPopup() {
+  const popup = document.getElementById('cardapioPopup');
+  const body = document.getElementById('cardapioPopupBody');
+  popup.classList.add('open');
+  body.innerHTML = '<div class="menu-popup__empty">Carregando cardápio...</div>';
+
+  try {
+    const { data, error } = await db
+      .from('config_imagens_site')
+      .select('nome, imagem_destaque, atualizado_em')
+      .eq('tipo', 'cardapio')
+      .order('atualizado_em', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data || !data.imagem_destaque) {
+      body.innerHTML = '<div class="menu-popup__empty">Nenhum cardápio cadastrado.</div>';
+      return;
+    }
+
+    body.innerHTML = `<img class="menu-popup__image" src="${data.imagem_destaque}" alt="${data.nome || 'Cardápio'}">`;
+  } catch (err) {
+    console.error('Cardápio:', err);
+    body.innerHTML = '<div class="menu-popup__empty">Não foi possível carregar o cardápio.</div>';
+  }
+}
+
+function fecharCardapioPopup() {
+  document.getElementById('cardapioPopup').classList.remove('open');
+}
+
+document.getElementById('cardapioPopup').addEventListener('click', event => {
+  if (event.target.id === 'cardapioPopup') fecharCardapioPopup();
+});
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') fecharCardapioPopup();
+});
 
     /* ── TABS ── */
     document.querySelectorAll('.tab-btn').forEach(btn => {

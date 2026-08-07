@@ -1,677 +1,1327 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda de Salas - Intranet</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --secondary: #34495e;
-            --accent: #3498db;
-            --light: #ecf0f1;
-            --success: #2ecc71;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agenda da Sala de Reuni&atilde;o</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    :root {
+      --navy: #0f1e6e;
+      --navy-2: #172982;
+      --teal: #05afaf;
+      --teal-dark: #048f8f;
+      --teal-soft: #e4f8f7;
+      --bg: #f4f6fb;
+      --surface: #ffffff;
+      --line: #dfe3ef;
+      --muted: #7f87ad;
+      --text: #101845;
+      --danger: #d93950;
+      --shadow: 0 6px 22px rgba(15, 30, 110, .09);
+      --radius: 8px;
+    }
 
-        .room-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "DM Sans", Arial, sans-serif;
+      font-size: 14px;
+    }
 
-        .calendar-day.today {
-            border: 2px solid var(--accent);
-        }
+    .topbar {
+      height: 66px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 0 28px;
+      background: var(--navy);
+    }
 
-        .time-slot.reserved {
-            background-color: rgba(231, 76, 60, 0.2);
-            border-left: 4px solid var(--danger);
-        }
+    .topbar img {
+      height: 50px;
+      width: auto;
+      display: block;
+      background: #fff;
+      border-radius: 6px;
+      padding: 6px 14px;
+    }
 
-        .time-slot.available {
-            background-color: rgba(46, 204, 113, 0.2);
-            border-left: 4px solid var(--success);
-        }
+    .logo-fallback {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      color: #fff;
+      font-weight: 700;
+    }
 
-        .overlay {
-            backdrop-filter: blur(5px);
-        }
-    </style>
+    .logo-fallback em { color: var(--teal); font-style: normal; }
+    .divider { width: 1px; height: 24px; background: rgba(255,255,255,.16); }
+    .top-title {
+      color: rgba(255,255,255,.7);
+      font-size: 12px;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+
+    .page {
+      width: min(96vw, 1720px);
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    .head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--navy);
+      font-size: 25px;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .actions, .modal-actions, .quick-times {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--navy);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .15s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover { border-color: var(--navy); }
+    .btn-primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+    .btn-primary:hover { background: var(--teal-dark); border-color: var(--teal-dark); }
+    .btn-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+    .btn-ghost { background: transparent; }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) 190px 170px 170px auto;
+      gap: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    input, select { height: 38px; padding: 0 11px; }
+    textarea {
+      min-height: 230px;
+      padding: 12px;
+      resize: vertical;
+      font-family: "DM Mono", Consolas, monospace;
+      font-size: 12px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(5,175,175,.12);
+    }
+
+    .calendar-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .calendar-card, .side-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .calendar-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 58px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .month-title {
+      color: var(--navy);
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: capitalize;
+    }
+
+    .weekdays, .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    .calendar-card.week-mode .day {
+      min-height: 520px;
+    }
+
+    .calendar-card.week-mode .event {
+      padding: 8px 9px;
+    }
+
+    .calendar-card.week-mode .weekdays {
+      display: none;
+    }
+
+    .calendar-card.week-mode .calendar-grid {
+      display: block;
+      max-height: clamp(520px, calc(100vh - 320px), 660px);
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+
+    .week-time-view {
+      --hour-height: 46px;
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr);
+      min-width: 980px;
+      background: #fff;
+    }
+
+    .week-time-corner {
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .week-time-days {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      border-bottom: 1px solid var(--line);
+    }
+
+    .week-time-day-head {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      min-height: 70px;
+      padding: 9px 6px;
+      border-right: 1px solid var(--line);
+      color: var(--navy);
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .week-time-day-head:last-child { border-right: 0; }
+    .week-time-day-head span:first-child {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .6px;
+    }
+
+    .week-time-day-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    .week-time-day-head.today .week-time-day-number {
+      background: var(--teal);
+      color: #fff;
+    }
+
+    .week-time-labels {
+      display: grid;
+      grid-template-rows: repeat(12, var(--hour-height));
+      border-right: 1px solid var(--line);
+    }
+
+    .week-time-label {
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      padding: 0 8px;
+      transform: translateY(-7px);
+      text-align: right;
+    }
+
+    .week-time-body {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      min-height: calc(12 * var(--hour-height));
+      background-image: linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+      background-size: 100% var(--hour-height);
+    }
+
+    .week-time-col {
+      position: relative;
+      min-height: calc(12 * var(--hour-height));
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,.68);
+    }
+
+    .week-time-col:last-child { border-right: 0; }
+    .week-time-col.today { box-shadow: inset 0 0 0 2px rgba(5,175,175,.45); }
+
+    .week-event {
+      position: absolute;
+      left: 7px;
+      right: 7px;
+      min-height: 34px;
+      overflow: hidden;
+      border: 1px solid rgba(15,30,110,.08);
+      border-left: 4px solid var(--teal);
+      border-radius: 6px;
+      background: var(--teal-soft);
+      color: var(--navy);
+      padding: 6px 8px;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(15,30,110,.08);
+    }
+
+    .week-event.permanent {
+      border-left-color: var(--navy);
+      background: #eef2ff;
+    }
+
+    .week-event strong,
+    .week-event span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .week-event strong { font-size: 11px; }
+    .week-event span { margin-top: 2px; font-size: 12px; font-weight: 700; }
+
+    .weekday {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+      background: #f9fbff;
+    }
+
+    .day {
+      min-height: 148px;
+      padding: 8px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      position: relative;
+    }
+
+    .day:nth-child(7n) { border-right: 0; }
+    .day.outside { background: #f7f8fc; color: #a1a8c4; }
+    .day.today { box-shadow: inset 0 0 0 2px var(--teal); }
+
+    .day-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .day-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      color: var(--navy);
+      font-weight: 800;
+    }
+
+    .today .day-number {
+      background: var(--teal);
+      color: #fff;
+    }
+
+    .add-slot {
+      border: 0;
+      background: var(--teal-soft);
+      color: var(--teal-dark);
+      border-radius: 999px;
+      width: 25px;
+      height: 25px;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .events {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .event {
+      width: 100%;
+      border: 1px solid rgba(15,30,110,.08);
+      border-left: 4px solid var(--teal);
+      border-radius: 6px;
+      background: var(--teal-soft);
+      color: var(--navy);
+      padding: 6px 7px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .event:hover { border-color: var(--teal); }
+    .event.permanent { border-left-color: var(--navy); background: #eef2ff; }
+    .event-time {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .event-owner {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .more {
+      color: var(--muted);
+      font-size: 11px;
+      padding: 2px 4px;
+    }
+
+    .side-card {
+      padding: 16px;
+    }
+
+    .side-title {
+      margin: 0 0 12px;
+      color: var(--navy);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+    }
+
+    .side-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      max-height: calc(100vh - 238px);
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .mini {
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--teal);
+      border-radius: 7px;
+      padding: 10px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .mini strong {
+      display: block;
+      color: var(--navy);
+      font-size: 12px;
+    }
+
+    .mini span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .empty {
+      padding: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(13, 19, 64, .55);
+    }
+
+    .modal.open { display: flex; }
+
+    .modal-dialog {
+      width: min(94vw, 720px);
+      max-height: 92vh;
+      overflow: auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 22px 70px rgba(0,0,0,.26);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-title {
+      color: var(--navy);
+      font-weight: 800;
+    }
+
+    .modal-body {
+      display: grid;
+      gap: 13px;
+      padding: 16px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .wide { grid-column: 1 / -1; }
+    .help { margin: 0; color: var(--muted); font-size: 13px; }
+    .quick-times { margin-top: 2px; }
+    .quick-times .btn { padding: 6px 9px; }
+
+    @media (max-width: 1050px) {
+      .calendar-shell { grid-template-columns: 1fr; }
+      .side-list { max-height: none; }
+      .toolbar { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .topbar { height: auto; min-height: 62px; flex-wrap: wrap; padding: 12px 16px; }
+      .page { width: min(94vw, 640px); padding-top: 18px; }
+      .head { align-items: stretch; flex-direction: column; }
+      .actions { justify-content: flex-start; }
+      .toolbar, .form-grid { grid-template-columns: 1fr; }
+      .weekdays { display: none; }
+      .calendar-grid { grid-template-columns: 1fr; }
+      .day, .day:nth-child(7n) { border-right: 0; min-height: auto; }
+      .day.outside { display: none; }
+      .calendar-card.week-mode .calendar-grid { max-height: 70vh; }
+    }
+  </style>
 </head>
-
-<body class="bg-gray-50 font-sans">
-    <div class="container mx-auto px-4 py-8">
-        <header class="mb-8">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div class="flex items-center gap-4">
-                    <div class="bg-white p-3 rounded-lg shadow">
-                        <img src="https://placehold.co/60x60"
-                            alt="Logotipo corporativo minimalista em azul escuro com ícone de edifício" />
-                    </div>
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-800">Agenda de Salas</h1>
-                        <p class="text-gray-600">Gerencie as reservas das salas de reunião</p>
-                    </div>
-                </div>
-                <button id="newBookingBtn"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                    Nova Reserva
-                </button>
-            </div>
-        </header>
-
-        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-            <div class="p-4 border-b border-gray-200 bg-gray-50">
-                <div class="flex flex-col md:flex-row justify-between gap-4">
-                    <div class="flex items-center gap-2">
-                        <button id="prevPeriod" class="p-2 rounded-lg hover:bg-gray-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-                        <h2 id="periodTitle" class="text-xl font-semibold text-gray-800">Semana de 10/04 a 16/04</h2>
-                        <button id="nextPeriod" class="p-2 rounded-lg hover:bg-gray-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="flex gap-2">
-                        <button data-view="day"
-                            class="view-toggle px-4 py-1 rounded-lg border hover:bg-gray-100">Dia</button>
-                        <button data-view="week"
-                            class="view-toggle px-4 py-1 rounded-lg border bg-blue-100 border-blue-200 text-blue-700">Semana</button>
-                        <button data-view="month"
-                            class="view-toggle px-4 py-1 rounded-lg border hover:bg-gray-100">Mês</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Filtros -->
-            <div class="p-4 border-b border-gray-200">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Localização</label>
-                        <select class="w-full rounded-lg border-gray-300">
-                            <option>Todos</option>
-                            <option>Andar 1</option>
-                            <option>Andar 2</option>
-                            <option>Andar 3</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Capacidade</label>
-                        <select class="w-full rounded-lg border-gray-300">
-                            <option>Todos</option>
-                            <option>Até 4 pessoas</option>
-                            <option>5-8 pessoas</option>
-                            <option>9+ pessoas</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Equipamentos</label>
-                        <select class="w-full rounded-lg border-gray-300">
-                            <option>Todos</option>
-                            <option>Videoconferência</option>
-                            <option>Quadro branco</option>
-                            <option>Projetor</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select class="w-full rounded-lg border-gray-300">
-                            <option>Todos</option>
-                            <option>Disponível</option>
-                            <option>Reservada</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Visualização Semanal -->
-            <div id="weekView" class="p-2 overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr class="text-left">
-                            <th class="w-48 px-4 py-2 text-gray-600 font-medium border-r">Salas</th>
-                            <th class="px-4 py-2 text-gray-600 font-medium border-r">Segunda</th>
-                            <th class="px-4 py-2 text-gray-600 font-medium border-r">Terça</th>
-                            <th class="px-4 py-2 text-gray-600 font-medium border-r">Quarta</th>
-                            <th class="px-4 py-2 text-gray-600 font-medium border-r">Quinta</th>
-                            <th class="px-4 py-2 text-gray-600 font-medium border-r">Sexta</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="px-4 py-3 font-medium border-r align-top">
-                                <div class="flex items-center gap-2">
-                                    <img src="https://placehold.co/40x40"
-                                        alt="Foto da Sala de Reunião 1 - Sala moderna com mesa oval e cadeiras pretas"
-                                        class="rounded" />
-                                    <div>
-                                        <div>Sala 101</div>
-                                        <div class="text-xs text-gray-500">Capacidade: 6</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-1 py-1 border-r border-t h-24">
-                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
-                                    <div class="font-medium">Apresentação</div>
-                                    <div>08:00 - 09:30</div>
-                                    <div class="text-xs">João Silva</div>
-                                </div>
-                                <div
-                                    class="time-slot available px-2 py-1 mb-1 rounded text-xs cursor-pointer hover:bg-green-100">
-                                    Disponível <br>14:00 - 16:00
-                                </div>
-                            </td>
-                            <td class="px-1 py-1 border-r border-t h-24">
-                                <div
-                                    class="time-slot available px-2 py-1 mb-1 rounded text-xs cursor-pointer hover:bg-green-100">
-                                    Disponível <br>09:00 - 12:00
-                                </div>
-                            </td>
-                            <td class="px-1 py-1 border-r border-t h-24">
-                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
-                                    <div class="font-medium">Reunião Depto</div>
-                                    <div>10:00 - 12:00</div>
-                                    <div class="text-xs">Maria Souza</div>
-                                </div>
-                            </td>
-                            <td class="px-1 py-1 border-r border-t h-24"></td>
-                            <td class="px-1 py-1 border-t h-24">
-                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
-                                    <div class="font-medium">Workshop</div>
-                                    <div>13:30 - 17:00</div>
-                                    <div class="text-xs">Carlos Mendes</div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="px-4 py-3 font-medium border-r align-top">
-                                <div class="flex items-center gap-2">
-                                    <img src="https://placehold.co/40x40"
-                                        alt="Foto da Sala de Reunião 2 - Sala de videoconferência com TV grande"
-                                        class="rounded" />
-                                    <div>
-                                        <div>Sala 201</div>
-                                        <div class="text-xs text-gray-500">Capacidade: 8</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-1 py-1 border-r border-t h-24">
-                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
-                                    <div class="font-medium">Videoconf.</div>
-                                    <div>09:00 - 11:00</div>
-                                    <div class="text-xs">Ana Paula</div>
-                                </div>
-                            </td>
-                            <td class="px-1 py-1 border-r border-t h-24"></td>
-                            <td class="px-1 py-1 border-r border-t h-24">
-                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
-                                    <div class="font-medium">Treinamento</div>
-                                    <div>14:00 - 18:00</div>
-                                    <div class="text-xs">Paula Gomes</div>
-                                </div>
-                            </td>
-                            <td class="px-1 py-1 border-r border-t h-24">
-                                <div
-                                    class="time-slot available px-2 py-1 mb-1 rounded text-xs cursor-pointer hover:bg-green-100">
-                                    Disponível <br>10:00 - 12:00
-                                </div>
-                            </td>
-                            <td class="px-1 py-1 border-t h-24"></td>
-                        </tr>
-                        <tr>
-                            <td class="px-4 py-3 font-medium border-r align-top">
-                                <div class="flex items-center gap-2">
-                                    <img src="https://placehold.co/40x40"
-                                        alt="Foto da Sala de Reunião 3 - Sala de brainstorming com quadro branco e puffes coloridos"
-                                        class="rounded" />
-                                    <div>
-                                        <div>Sala 301</div>
-                                        <div class="text-xs text-gray-500">Capacidade: 4</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-1 py-1 border-r border-t h-24">
-                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
-                                    <div class="font-medium">1:1</div>
-                                    <div>15:00 - 16:00</div>
-                                    <div class="text-xs">Roberto Alves</div>
-                                </div>
-                            </td>
-                            <td class="px-1 py-1 border-r border-t h-24">
-                                <div class="time-slot reserved px-2 py-1 mb-1 rounded text-xs">
-                                    <div class="font-medium">1:1</div>
-                                    <div>11:00 - 12:00</div>
-                                    <div class="text-xs">Roberto Alves</div>
-                                </div>
-                            </td>
-                            <td class="px-1 py-1 border-r border-t h-24">
-                                <div
-                                    class="time-slot available px-2 py-1 mb-1 rounded text-xs cursor-pointer hover:bg-green-100">
-                                    Disponível <br>08:00 - 10:00
-                                </div>
-                                <div
-                                    class="time-slot available px-2 py-1 mb-1 rounded text-xs cursor-pointer hover:bg-green-100">
-                                    Disponível <br>16:00 - 18:00
-                                </div>
-                            </td>
-                            <td class="px-1 py-1 border-r border-t h-24"></td>
-                            <td class="px-1 py-1 border-t h-24"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Visualização Mensal (oculta inicialmente) -->
-            <div id="monthView" class="hidden p-4">
-                <div class="grid grid-cols-7 gap-1 text-sm">
-                    <div class="font-medium text-center py-2 text-gray-700">Dom</div>
-                    <div class="font-medium text-center py-2 text-gray-700">Seg</div>
-                    <div class="font-medium text-center py-2 text-gray-700">Ter</div>
-                    <div class="font-medium text-center py-2 text-gray-700">Qua</div>
-                    <div class="font-medium text-center py-2 text-gray-700">Qui</div>
-                    <div class="font-medium text-center py-2 text-gray-700">Sex</div>
-                    <div class="font-medium text-center py-2 text-gray-700">Sáb</div>
-
-                    <div class="p-2 h-24 bg-gray-50"></div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">1</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">2</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">3</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">4</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">5</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">6</div>
-
-                    <div class="p-2 h-24 border hover:bg-gray-50">7</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">8</div>
-                    <div class="p-2 h-24 border today hover:bg-blue-50">9</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">10</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">11</div>
-                    <div class="p-2 h-24 border bg-red-50">12<div class="text-xs mt-1 text-red-500">3 reservas</div>
-                    </div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">13</div>
-
-                    <div class="p-2 h-24 border hover:bg-gray-50">14</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">15</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">16</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">17</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">18</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">19</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">20</div>
-
-                    <div class="p-2 h-24 border hover:bg-gray-50">21</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">22</div>
-                    <div class="p-2 h-24 border bg-blue-50">23<div class="text-xs mt-1 text-blue-500">2 reservas</div>
-                    </div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">24</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">25</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">26</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">27</div>
-
-                    <div class="p-2 h-24 border hover:bg-gray-50">28</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">29</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">30</div>
-                    <div class="p-2 h-24 border hover:bg-gray-50">31</div>
-                    <div class="p-2 h-24 bg-gray-50"></div>
-                    <div class="p-2 h-24 bg-gray-50"></div>
-                    <div class="p-2 h-24 bg-gray-50"></div>
-                </div>
-            </div>
-
-            <!-- Visualização Diária (oculta inicialmente) -->
-            <div id="dayView" class="hidden p-4">
-                <h3 class="text-lg font-medium text-gray-800 mb-4">Segunda-feira, 10 de Abril</h3>
-                <div class="space-y-2">
-                    <div class="bg-white rounded-lg border p-4 flex justify-between">
-                        <div>
-                            <div class="font-medium">Sala 101</div>
-                            <div class="text-sm text-gray-600">08:00 - 09:30</div>
-                        </div>
-                        <div>
-                            <div class="font-medium">Apresentação</div>
-                            <div class="text-sm text-gray-600">João Silva</div>
-                        </div>
-                        <button class="text-blue-600 hover:text-blue-800">Detalhes</button>
-                    </div>
-                    <div class="bg-white rounded-lg border p-4 flex justify-between">
-                        <div>
-                            <div class="font-medium">Sala 201</div>
-                            <div class="text-sm text-gray-600">09:00 - 11:00</div>
-                        </div>
-                        <div>
-                            <div class="font-medium">Videoconferência</div>
-                            <div class="text-sm text-gray-600">Ana Paula</div>
-                        </div>
-                        <button class="text-blue-600 hover:text-blue-800">Detalhes</button>
-                    </div>
-                    <div class="bg-white rounded-lg border p-4 flex justify-between">
-                        <div>
-                            <div class="font-medium">Sala 301</div>
-                            <div class="text-sm text-gray-600">15:00 - 16:00</div>
-                        </div>
-                        <div>
-                            <div class="font-medium">1:1</div>
-                            <div class="text-sm text-gray-600">Roberto Alves</div>
-                        </div>
-                        <button class="text-blue-600 hover:text-blue-800">Detalhes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-            <div class="p-4 border-b border-gray-200 bg-gray-50">
-                <h3 class="text-lg font-medium text-gray-800">Salas Disponíveis</h3>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-                <div class="room-card bg-white rounded-lg border overflow-hidden transition-all hover:shadow-md">
-                    <div class="relative h-40">
-                        <img src="https://placehold.co/600x400"
-                            alt="Sala de reunião 101 - Mesa de reunião oval com cadeiras estofadas em tecido cinza"
-                            class="w-full h-full object-cover" />
-                        <div class="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded">Disponível
-                        </div>
-                    </div>
-                    <div class="p-4">
-                        <h4 class="font-medium text-lg mb-1">Sala 101</h4>
-                        <div class="text-gray-600 text-sm mb-2">Andar 1 • Capacidade: 6 pessoas</div>
-                        <div class="flex flex-wrap gap-1 mb-3">
-                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Videoconferência</span>
-                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Projetor</span>
-                        </div>
-                        <button
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-medium transition-colors">
-                            Reservar Agora
-                        </button>
-                    </div>
-                </div>
-                <div class="room-card bg-white rounded-lg border overflow-hidden transition-all hover:shadow-md">
-                    <div class="relative h-40">
-                        <img src="https://placehold.co/600x400" alt="Sala de reunião 201 - Espaço moderno com TV 65"
-                            class="w-full h-full object-cover" />
-                        <div class="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded">Disponível
-                        </div>
-                    </div>
-                    <div class="p-4">
-                        <h4 class="font-medium text-lg mb-1">Sala 201</h4>
-                        <div class="text-gray-600 text-sm mb-2">Andar 2 • Capacidade: 8 pessoas</div>
-                        <div class="flex flex-wrap gap-1 mb-3">
-                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Videoconferência</span>
-                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">TV 65"</span>
-                        </div>
-                        <button
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-medium transition-colors">
-                            Reservar Agora
-                        </button>
-                    </div>
-                </div>
-                <div class="room-card bg-white rounded-lg border overflow-hidden transition-all hover:shadow-md">
-                    <div class="relative h-40">
-                        <img src="https://placehold.co/600x400"
-                            alt="Sala de reunião 301 - Espaço criativo com quadro branco e puffes coloridos"
-                            class="w-full h-full object-cover" />
-                        <div class="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded">Ocupada
-                        </div>
-                    </div>
-                    <div class="p-4">
-                        <h4 class="font-medium text-lg mb-1">Sala 301</h4>
-                        <div class="text-gray-600 text-sm mb-2">Andar 3 • Capacidade: 4 pessoas</div>
-                        <div class="flex flex-wrap gap-1 mb-3">
-                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Quadro branco</span>
-                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Flip chart</span>
-                        </div>
-                        <button disabled
-                            class="w-full bg-gray-300 text-gray-600 py-2 rounded-lg text-sm font-medium cursor-not-allowed">
-                            Indisponível
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal de Nova Reserva -->
-        <div id="newBookingModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-            <div class="overlay absolute inset-0 bg-black opacity-50"></div>
-            <div class="relative bg-white rounded-lg max-w-2xl w-full mx-auto my-8 p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold text-gray-800">Nova Reserva de Sala</h3>
-                    <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-                <form id="bookingForm" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Salas Disponíveis</label>
-                            <select id="roomSelect" class="w-full rounded-lg border-gray-300">
-                                <option value="101">Sala 101 - Capacidade: 6</option>
-                                <option value="201">Sala 201 - Capacidade: 8</option>
-                                <option value="301">Sala 301 - Capacidade: 4</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
-                            <input type="date" id="bookingDate" class="w-full rounded-lg border-gray-300" />
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Hora Início</label>
-                            <input type="time" id="startTime" class="w-full rounded-lg border-gray-300" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Hora Fim</label>
-                            <input type="time" id="endTime" class="w-full rounded-lg border-gray-300" />
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Título da Reunião</label>
-                        <input type="text" id="meetingTitle" placeholder="Ex: Reunião com cliente X"
-                            class="w-full rounded-lg border-gray-300" />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
-                        <textarea id="meetingDescription" rows="3" placeholder="Detalhes sobre a reunião..."
-                            class="w-full rounded-lg border-gray-300"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Participantes</label>
-                        <input type="text" id="participants" placeholder="Adicione participantes..."
-                            class="w-full rounded-lg border-gray-300" />
-                    </div>
-                    <div class="flex justify-end gap-3 pt-4">
-                        <button type="button" id="cancelBookingBtn"
-                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Cancelar</button>
-                        <button type="submit"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Confirmar
-                            Reserva</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<body>
+  <header class="topbar">
+    <div>
+      <img id="logoPrincipal" src="" alt="Logo" style="display:none;">
+      <div class="logo-fallback" id="logoPlaceholder">Portal <em>&nbsp;Intranet</em></div>
     </div>
+    <div class="divider"></div>
+    <span class="top-title">Agenda da Sala de Reuni&atilde;o</span>
+  </header>
 
-   <script>
-    // Define as credenciais do Supabase
-    const supabaseUrl = 'https://woywqncdfuyworcbjjlv.supabase.co';
-    const supabaseKey = '...'; // Chave secreta de acesso ao Supabase
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  <main class="page">
+    <section class="head">
+      <div>
+        <h1>Agenda da Sala de Reuni&atilde;o</h1>
+        <p class="subtitle">Visual de m&ecirc;s: clique em um dia ou reserva para adicionar, editar ou remover hor&aacute;rios.</p>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="window.location.href='index.html'">Voltar ao portal</button>
+        <button class="btn btn-primary" onclick="abrirReserva()">Adicionar hor&aacute;rio</button>
+      </div>
+    </section>
 
-    // Aguarda o carregamento completo do DOM
-    document.addEventListener('DOMContentLoaded', function () {
-        // === SEÇÃO: Alternância de visualização (Semana, Mês, Dia) ===
-        const viewToggles = document.querySelectorAll('.view-toggle'); // Botões para mudar visualização
-        const weekView = document.getElementById('weekView');
-        const monthView = document.getElementById('monthView');
-        const dayView = document.getElementById('dayView');
+    <section class="toolbar" aria-label="Filtros da agenda">
+      <div class="field">
+        <label for="searchInput">Pesquisar</label>
+        <input id="searchInput" type="search" placeholder="Nome, assunto, data ou status...">
+      </div>
+      <div class="field">
+        <label for="monthSelect">M&ecirc;s</label>
+        <select id="monthSelect"></select>
+      </div>
+      <div class="field">
+        <label for="statusSelect">Tipo</label>
+        <select id="statusSelect">
+          <option value="">Todos</option>
+          <option value="permanente">Permanente</option>
+          <option value="normal">Normal</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="viewSelect">Visualiza&ccedil;&atilde;o</label>
+        <select id="viewSelect">
+          <option value="month">M&ecirc;s</option>
+          <option value="week">Semana</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button class="btn btn-primary" onclick="abrirReserva()">Novo agendamento</button>
+      </div>
+    </section>
 
-        // Adiciona comportamento aos botões de visualização
-        viewToggles.forEach(toggle => {
-            toggle.addEventListener('click', function () {
-                // Remove estilo ativo de todos os botões
-                viewToggles.forEach(t => t.classList.remove('bg-blue-100', 'border-blue-200', 'text-blue-700'));
+    <section class="calendar-shell">
+      <div class="calendar-card" id="calendarCard">
+        <div class="calendar-head">
+          <button class="btn" onclick="mudarMes(-1)">Anterior</button>
+          <div class="month-title" id="monthTitle"></div>
+          <button class="btn" onclick="mudarMes(1)">Pr&oacute;ximo</button>
+        </div>
+        <div class="weekdays">
+          <div class="weekday">Dom</div>
+          <div class="weekday">Seg</div>
+          <div class="weekday">Ter</div>
+          <div class="weekday">Qua</div>
+          <div class="weekday">Qui</div>
+          <div class="weekday">Sex</div>
+          <div class="weekday">S&aacute;b</div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
 
-                // Aplica estilo ao botão clicado
-                this.classList.add('bg-blue-100', 'border-blue-200', 'text-blue-700');
+      <aside class="side-card">
+        <h2 class="side-title" id="sideTitle">Hor&aacute;rios do m&ecirc;s</h2>
+        <div class="side-list" id="sideList"></div>
+      </aside>
+    </section>
+  </main>
 
-                // Oculta todas as visualizações
-                weekView.classList.add('hidden');
-                monthView.classList.add('hidden');
-                dayView.classList.add('hidden');
+  <div class="modal" id="reservaModal" role="dialog" aria-modal="true" aria-labelledby="reservaTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <span class="modal-title" id="reservaTitle">Adicionar hor&aacute;rio</span>
+        <button class="btn" onclick="fecharReserva()">Fechar</button>
+      </div>
+      <form class="modal-body" id="reservaForm">
+        <input id="reservaId" type="hidden">
+        <div class="form-grid">
+          <div class="field">
+            <label for="dateInput">Data</label>
+            <input id="dateInput" type="date" required>
+          </div>
+          <div class="field">
+            <label for="ownerInput">Respons&aacute;vel</label>
+            <input id="ownerInput" type="text" placeholder="Nome ou setor" required>
+          </div>
+          <div class="field">
+            <label for="startInput">In&iacute;cio</label>
+            <input id="startInput" type="time" required>
+          </div>
+          <div class="field">
+            <label for="endInput">Fim</label>
+            <input id="endInput" type="time">
+          </div>
+          <div class="field">
+            <label for="statusInput">Tipo</label>
+            <select id="statusInput">
+              <option value="">Normal</option>
+              <option value="PERMANENTE">Permanente</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="subjectInput">Assunto</label>
+            <input id="subjectInput" type="text" placeholder="Reuni&atilde;o, diretoria, treinamento...">
+          </div>
+          <div class="field wide">
+            <label for="recurrenceInput">Observa&ccedil;&atilde;o / recorr&ecirc;ncia</label>
+            <input id="recurrenceInput" type="text" placeholder="Ex.: toda sexta-feira, primeira segunda do m&ecirc;s...">
+          </div>
+        </div>
+        <div>
+          <p class="help">Atalhos de hor&aacute;rio</p>
+          <div class="quick-times">
+            <button class="btn" type="button" onclick="usarHorario('08:00','09:00')">08:00</button>
+            <button class="btn" type="button" onclick="usarHorario('09:00','10:00')">09:00</button>
+            <button class="btn" type="button" onclick="usarHorario('10:00','11:00')">10:00</button>
+            <button class="btn" type="button" onclick="usarHorario('14:00','15:00')">14:00</button>
+            <button class="btn" type="button" onclick="usarHorario('15:00','16:00')">15:00</button>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-danger" type="button" id="deleteBtn" onclick="removerReserva()" style="display:none;">Remover</button>
+          <button class="btn btn-primary" type="submit">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-                // Exibe a visualização correspondente
-                const view = this.dataset.view;
-                if (view === 'week') weekView.classList.remove('hidden');
-                else if (view === 'month') monthView.classList.remove('hidden');
-                else if (view === 'day') dayView.classList.remove('hidden');
-            });
-        });
+  <script>
+    const SUPABASE_URL = 'https://woywqncdfuyworcbjjlv.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXdxbmNkZnV5d29yY2Jqamx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMTUyNzgsImV4cCI6MjA2MDU5MTI3OH0.o63pZx8l8oe1aEYKEaYVQyHgEvR5FGkfAygTLTvWWVA';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const ITEMS_KEY = 'agendaSalaReuniaoItemsV2';
+    const WEEKDAYS = ['DOMINGO', 'SEGUNDA FEIRA', 'TERCA FEIRA', 'QUARTA FEIRA', 'QUINTA FEIRA', 'SEXTA FEIRA', 'SABADO'];
+    const SAMPLE_DATA = `03/08/2026\tSEGUNDA FEIRA\t09:00\t12:00\tLimerci
+03/08/2026\tSEGUNDA FEIRA\t14:00\t17:50\tJunior\t\tPERMANENTE\t\tAgendar
+04/08/2026\tTERCA FEIRA\t10:00\t11:00\tEvandro\t\tPERMANENTE\t\tAgendar
+05/08/2026\tQUARTA FEIRA\t10:00\t12:00\tLimerci\tPAE\t\tAgendar
+06/08/2026\tQUINTA FEIRA\t15:00\t16:00\tEvandro\t\tPERMANENTE\tReservar toda 5 feira\tAgendar
+07/08/2026\tSEXTA FEIRA\t11:00\t12:00\tEvandro\tAgendar toda 1 sexta feira do mes\tPERMANENTE\tAgendar toda 1 sexta feira do mes
+10/08/2026\tSEGUNDA FEIRA\t15:00\t17:50\tJunior\t\tPERMANENTE\t\tAgendar
+12/08/2026\tQUARTA FEIRA\t10:00\t12:00\tLimerci\tPLANEJAMENTO\tPERMANENTE\t\tAgendar
+21/08/2026\tSEXTA FEIRA\t14:30\t15:30\tCarlos\t\tPERMANENTE\tReservar toda 6 feira\tAgendar`;
 
-        // === SEÇÃO: Abertura e fechamento do modal de nova reserva ===
-        const newBookingBtn = document.getElementById('newBookingBtn'); // Botão para nova reserva
-        const closeModalBtn = document.getElementById('closeModalBtn'); // Botão de fechar modal
-        const cancelBookingBtn = document.getElementById('cancelBookingBtn'); // Botão cancelar
-        const newBookingModal = document.getElementById('newBookingModal'); // Modal
+    let items = [];
+    let activeMonth = monthKey(new Date());
+    let activeDate = new Date();
+    let currentView = 'month';
 
-        // Abre o modal ao clicar no botão
-        newBookingBtn.addEventListener('click', function () {
-            newBookingModal.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden'); // Evita scroll da página
-        });
+    function normalize(value) {
+      return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    }
 
-        // Função para fechar o modal
-        function closeModal() {
-            newBookingModal.classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-        }
+    function escapeHTML(value) {
+      return String(value || '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[char]));
+    }
 
-        // Fecha o modal ao clicar nos botões de fechar ou cancelar
-        closeModalBtn.addEventListener('click', closeModal);
-        cancelBookingBtn.addEventListener('click', closeModal);
+    function parseDateBR(value) {
+      const clean = String(value || '').trim();
+      const match = clean.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+      if (!match) return null;
+      let year = Number(match[3]);
+      if (year < 100) year += 2000;
+      const date = new Date(year, Number(match[2]) - 1, Number(match[1]));
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
 
-        // Fecha o modal ao clicar fora da área de conteúdo (overlay)
-        newBookingModal.addEventListener('click', function (e) {
-            if (e.target.classList.contains('overlay')) {
-                closeModal();
-            }
-        });
+    function parseDateISO(value) {
+      const parts = String(value || '').split('-').map(Number);
+      if (parts.length !== 3) return null;
+      const date = new Date(parts[0], parts[1] - 1, parts[2]);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
 
-        // === SEÇÃO: Navegação dinâmica por semanas (2025 a 2035) ===
-        const prevPeriodBtn = document.getElementById('prevPeriod'); // Botão semana anterior
-        const nextPeriodBtn = document.getElementById('nextPeriod'); // Botão próxima semana
-        const periodTitle = document.getElementById('periodTitle'); // Elemento com o texto da semana
+    function toISODate(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
 
-        const startDate = new Date('2025-01-06'); // Data inicial (segunda-feira)
-        const endDate = new Date('2035-12-31'); // Data final
-        let currentStartDate = new Date(startDate); // Data de referência atual
+    function monthKey(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
 
-        // Formata a data como DD/MM/AAAA
-        function formatDate(date) {
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
-        }
+    function monthLabel(key) {
+      const [year, month] = key.split('-').map(Number);
+      return new Date(year, month - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    }
 
-        // Atualiza o título com o intervalo da semana
-        function updatePeriodTitle() {
-            const weekEnd = new Date(currentStartDate);
-            weekEnd.setDate(weekEnd.getDate() + 6); // Soma 6 dias para obter o domingo
-            if (weekEnd > endDate) return; // Impede passar do limite final
-            const start = formatDate(currentStartDate);
-            const end = formatDate(weekEnd);
-            periodTitle.textContent = `Semana de ${start} a ${end}`;
-        }
+    function formatDate(date) {
+      return date.toLocaleDateString('pt-BR');
+    }
 
-        // Botão para voltar uma semana
-        prevPeriodBtn.addEventListener('click', function () {
-            const prevWeek = new Date(currentStartDate);
-            prevWeek.setDate(prevWeek.getDate() - 7);
-            if (prevWeek >= startDate) {
-                currentStartDate = prevWeek;
-                updatePeriodTitle();
-            }
-        });
+    function addDays(date, amount) {
+      const next = new Date(date);
+      next.setDate(next.getDate() + amount);
+      return next;
+    }
 
-        // Botão para avançar uma semana
-        nextPeriodBtn.addEventListener('click', function () {
-            const nextWeek = new Date(currentStartDate);
-            nextWeek.setDate(nextWeek.getDate() + 7);
-            if (nextWeek <= endDate) {
-                currentStartDate = nextWeek;
-                updatePeriodTitle();
-            }
-        });
+    function startOfWeek(date) {
+      const start = new Date(date);
+      start.setDate(date.getDate() - date.getDay());
+      start.setHours(0, 0, 0, 0);
+      return start;
+    }
 
-        updatePeriodTitle(); // Mostra a primeira semana ao carregar a página
+    function itemDate(item) {
+      return parseDateISO(item.date);
+    }
 
-        // === SEÇÃO: Clique em um horário disponível para abrir o modal ===
-        const availableSlots = document.querySelectorAll('.time-slot.available');
-        availableSlots.forEach(slot => {
-            slot.addEventListener('click', function () {
-                newBookingModal.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-            });
-        });
+    function isPermanent(item) {
+      return normalize(item.status).includes('permanente') || normalize(item.recurrence).includes('toda');
+    }
 
-        // === SEÇÃO: Envio do formulário de reserva ===
-        document.getElementById('bookingForm').addEventListener('submit', async (event) => {
-            event.preventDefault(); // Impede recarregar a página
+    function isToday(date) {
+      const now = new Date();
+      return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+    }
 
-            // Coleta os valores dos campos do formulário
-            const roomId = document.getElementById('roomSelect').value;
-            const bookingDate = document.getElementById('bookingDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            const title = document.getElementById('meetingTitle').value;
-            const description = document.getElementById('meetingDescription').value;
-            const participants = document.getElementById('participants').value.split(','); // Separa por vírgula
+    function recurrenceKey(item) {
+      return [
+        normalize(item.owner),
+        normalize(item.subject),
+        normalize(item.start),
+        normalize(item.end),
+        normalize(item.status),
+        normalize(item.recurrence)
+      ].join('|');
+    }
 
-            const startDateTime = `${bookingDate}T${startTime}:00`;
-            const endDateTime = `${bookingDate}T${endTime}:00`;
+    function nthWeekdayOfMonth(year, monthIndex, weekday, nth) {
+      const date = new Date(year, monthIndex, 1);
+      while (date.getDay() !== weekday) date.setDate(date.getDate() + 1);
+      date.setDate(date.getDate() + (nth - 1) * 7);
+      return date.getMonth() === monthIndex ? date : null;
+    }
 
-            // Insere os dados no banco Supabase
-            const { data, error } = await supabase
-                .from('reservations')
-                .insert([
-                    {
-                        room_id: roomId,
-                        usuario_id: null, // Pode ser ajustado se você tiver login
-                        start_time: startDateTime,
-                        end_time: endDateTime,
-                        title,
-                        description,
-                        participants
-                    }
-                ]);
+    function firstWeekdayAfterDay(year, monthIndex, weekday, day) {
+      const date = new Date(year, monthIndex, day);
+      while (date.getDay() !== weekday) date.setDate(date.getDate() + 1);
+      return date.getMonth() === monthIndex ? date : null;
+    }
 
-            // Exibe mensagem de erro ou sucesso
-            if (error) {
-                console.error('Erro ao criar reserva:', error);
-                alert('Erro ao criar reserva. Tente novamente.');
+    function generatePermanentCopies(baseItems) {
+      const sourceItems = baseItems.filter(item => !item.generated);
+      const byKey = new Set(baseItems.map(item => `${item.date}|${recurrenceKey(item)}`));
+      const copies = [];
+      const currentYear = new Date().getFullYear();
+      const years = [...new Set(sourceItems
+        .map(item => item.date.slice(0, 4))
+        .concat(String(currentYear), String(currentYear + 1)))]
+        .map(Number);
+
+      sourceItems.filter(isPermanent).forEach(item => {
+        const originalDate = itemDate(item);
+        if (!originalDate) return;
+        const ruleText = normalize(`${item.subject} ${item.recurrence}`);
+        const weekday = originalDate.getDay();
+
+        years.forEach(year => {
+          for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+            let dates = [];
+
+            if (ruleText.includes('1') && ruleText.includes('mes')) {
+              const date = nthWeekdayOfMonth(year, monthIndex, weekday, 1);
+              if (date) dates.push(date);
+            } else if (ruleText.includes('depois dia 20') || ruleText.includes('depois do dia 20')) {
+              const date = firstWeekdayAfterDay(year, monthIndex, weekday, 20);
+              if (date) dates.push(date);
             } else {
-                alert('Reserva criada com sucesso!');
-                closeModal(); // Fecha o modal após sucesso
+              for (let day = new Date(year, monthIndex, 1); day.getMonth() === monthIndex; day.setDate(day.getDate() + 1)) {
+                if (day.getDay() === weekday) dates.push(new Date(day));
+              }
             }
+
+            dates.forEach(date => {
+              const iso = toISODate(date);
+              const key = `${iso}|${recurrenceKey(item)}`;
+              if (byKey.has(key)) return;
+              byKey.add(key);
+              copies.push({
+                ...item,
+                id: `perm-${recurrenceKey(item)}-${iso}`.replace(/[^a-z0-9-]/gi, '-'),
+                date: iso,
+                weekday: WEEKDAYS[date.getDay()],
+                generated: true
+              });
+            });
+          }
         });
+      });
+
+      return removeScheduleConflicts([...baseItems, ...copies]);
+    }
+
+    function parseAgendaText(text) {
+      return String(text || '')
+        .split(/\r?\n/)
+        .map(line => line.split('\t').map(cell => cell.trim()))
+        .map(cols => {
+          const date = parseDateBR(cols[0]);
+          if (!date) return null;
+          return {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+            date: toISODate(date),
+            weekday: normalize(cols[1]).toUpperCase() || WEEKDAYS[date.getDay()],
+            start: (cols[2] || '').replace(';', ':'),
+            end: (cols[3] || '').replace(';', ':'),
+            owner: cols[4] || 'Sem responsavel',
+            subject: cols[5] || '',
+            status: cols[6] || '',
+            recurrence: cols[7] || ''
+          };
+        })
+        .filter(Boolean)
+        .filter((item, index, list) => list.findIndex(other => other.date === item.date && recurrenceKey(other) === recurrenceKey(item)) === index)
+        .sort(sortItems);
+    }
+
+    function sortItems(a, b) {
+      return a.date.localeCompare(b.date) || (a.start || '').localeCompare(b.start || '');
+    }
+
+    function removeScheduleConflicts(list) {
+      const kept = [];
+      list.sort(sortItems).forEach(item => {
+        const period = periodFromItem(item);
+        if (!period) return;
+        const conflictIndex = kept.findIndex(existing => {
+          if (existing.date !== item.date) return false;
+          const existingPeriod = periodFromItem(existing);
+          if (!existingPeriod) return false;
+          return period.start < existingPeriod.end && period.end > existingPeriod.start;
+        });
+
+        if (conflictIndex < 0) {
+          kept.push(item);
+          return;
+        }
+
+        const existing = kept[conflictIndex];
+        if (isPermanent(item) && !isPermanent(existing)) kept[conflictIndex] = item;
+      });
+      return kept.sort(sortItems);
+    }
+
+    function saveItems() {
+      localStorage.setItem(ITEMS_KEY, JSON.stringify(items));
+    }
+
+    function loadItems() {
+      const saved = localStorage.getItem(ITEMS_KEY);
+      if (saved) {
+        try {
+          items = JSON.parse(saved).filter(item => item.date);
+        } catch (error) {
+          items = [];
+        }
+      }
+      if (!items.length) {
+        items = parseAgendaText(SAMPLE_DATA);
+      }
+      items = generatePermanentCopies(items);
+      saveItems();
+
+      const todayKey = monthKey(new Date());
+      const keys = [...new Set(items.map(item => item.date.slice(0, 7)))].sort();
+      activeMonth = keys.includes(todayKey) ? todayKey : (keys[keys.length - 1] || todayKey);
+      const firstDate = items.find(item => item.date.slice(0, 7) === activeMonth);
+      activeDate = firstDate ? parseDateISO(firstDate.date) : new Date();
+      preencherMeses();
+      render();
+    }
+
+    function preencherMeses() {
+      const select = document.getElementById('monthSelect');
+      const keys = new Set(items.map(item => item.date.slice(0, 7)));
+      keys.add(monthKey(new Date()));
+      keys.add(activeMonth);
+      select.innerHTML = [...keys].sort().map(key => `<option value="${key}">${monthLabel(key)}</option>`).join('');
+      select.value = activeMonth;
+    }
+
+    function filteredItems() {
+      const query = normalize(document.getElementById('searchInput').value);
+      const status = document.getElementById('statusSelect').value;
+      const weekStart = startOfWeek(activeDate);
+      const weekEnd = addDays(weekStart, 6);
+      return items.filter(item => {
+        const date = itemDate(item);
+        const matchesPeriod = currentView === 'week'
+          ? date >= weekStart && date <= weekEnd
+          : item.date.slice(0, 7) === activeMonth;
+        const matchesStatus = !status || (status === 'permanente' ? isPermanent(item) : !isPermanent(item));
+        const matchesQuery = !query || normalize([
+          item.date,
+          item.weekday,
+          item.start,
+          item.end,
+          item.owner,
+          item.subject,
+          item.status,
+          item.recurrence
+        ].join(' ')).includes(query);
+        return matchesPeriod && matchesStatus && matchesQuery;
+      }).sort(sortItems);
+    }
+
+    function render() {
+      preencherMeses();
+      const visible = filteredItems();
+      const card = document.getElementById('calendarCard');
+      card.classList.toggle('week-mode', currentView === 'week');
+      if (currentView === 'week') {
+        const weekStart = startOfWeek(activeDate);
+        const weekEnd = addDays(weekStart, 6);
+        document.getElementById('monthTitle').textContent = `${formatDate(weekStart)} - ${formatDate(weekEnd)}`;
+        document.getElementById('sideTitle').innerHTML = 'Hor&aacute;rios da semana';
+        renderWeek(visible);
+      } else {
+        document.getElementById('monthTitle').textContent = monthLabel(activeMonth);
+        document.getElementById('sideTitle').innerHTML = 'Hor&aacute;rios do m&ecirc;s';
+        renderMonth(visible);
+      }
+      renderSideList(visible);
+    }
+
+    function renderMonth(visible) {
+      const grid = document.getElementById('calendarGrid');
+      const [year, month] = activeMonth.split('-').map(Number);
+      const first = new Date(year, month - 1, 1);
+      const last = new Date(year, month, 0);
+      const start = new Date(first);
+      start.setDate(first.getDate() - first.getDay());
+      const dayMap = new Map();
+
+      visible.forEach(item => {
+        if (!dayMap.has(item.date)) dayMap.set(item.date, []);
+        dayMap.get(item.date).push(item);
+      });
+
+      const cells = [];
+      for (let i = 0; i < 42; i++) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + i);
+        const iso = toISODate(date);
+        const dayItems = dayMap.get(iso) || [];
+        const outside = date.getMonth() !== first.getMonth();
+        const eventsHTML = dayItems.slice(0, 4).map(item => eventHTML(item)).join('');
+        const moreHTML = dayItems.length > 4 ? `<div class="more">+${dayItems.length - 4} reserva(s)</div>` : '';
+        cells.push(`
+          <div class="day ${outside ? 'outside' : ''} ${isToday(date) ? 'today' : ''}" ondblclick="abrirReserva('${iso}')">
+            <div class="day-top">
+              <span class="day-number">${date.getDate()}</span>
+              <button class="add-slot" title="Adicionar horario" onclick="abrirReserva('${iso}'); event.stopPropagation();">+</button>
+            </div>
+            <div class="events">${eventsHTML}${moreHTML}</div>
+          </div>
+        `);
+      }
+      grid.innerHTML = cells.join('');
+    }
+
+    function renderWeek(visible) {
+      const grid = document.getElementById('calendarGrid');
+      const weekStart = startOfWeek(activeDate);
+      const dayMap = new Map();
+      const hours = Array.from({ length: 12 }, (_, index) => index + 7);
+
+      visible.forEach(item => {
+        if (!dayMap.has(item.date)) dayMap.set(item.date, []);
+        dayMap.get(item.date).push(item);
+      });
+
+      const dayHeads = [];
+      const dayColumns = [];
+
+      for (let i = 0; i < 7; i++) {
+        const date = addDays(weekStart, i);
+        const iso = toISODate(date);
+        const dayItems = dayMap.get(iso) || [];
+        dayHeads.push(`
+          <div class="week-time-day-head ${isToday(date) ? 'today' : ''}">
+            <span>${['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'][date.getDay()]}</span>
+            <span class="week-time-day-number">${date.getDate()}</span>
+            <button class="add-slot" title="Adicionar horario" onclick="abrirReserva('${iso}'); event.stopPropagation();">+</button>
+          </div>
+        `);
+        dayColumns.push(`
+          <div class="week-time-col ${isToday(date) ? 'today' : ''}" ondblclick="abrirReserva('${iso}')">
+            ${dayItems.map(item => weekEventHTML(item)).join('')}
+          </div>
+        `);
+      }
+
+      grid.innerHTML = `
+        <div class="week-time-view">
+          <div class="week-time-corner">GMT-03</div>
+          <div class="week-time-days">${dayHeads.join('')}</div>
+          <div class="week-time-labels">
+            ${hours.map(hour => `<div class="week-time-label">${String(hour).padStart(2, '0')}:00</div>`).join('')}
+          </div>
+          <div class="week-time-body">${dayColumns.join('')}</div>
+        </div>
+      `;
+    }
+
+    function eventHTML(item) {
+      const title = `${item.start || '--:--'}${item.end ? ' - ' + item.end : ''}`;
+      return `
+        <button class="event ${isPermanent(item) ? 'permanent' : ''}" onclick="editarReserva('${item.id}'); event.stopPropagation();">
+          <span class="event-time">${escapeHTML(title)}</span>
+          <span class="event-owner">${escapeHTML(item.owner)}</span>
+        </button>
+      `;
+    }
+
+    function weekEventHTML(item) {
+      const dayStart = 7 * 60;
+      const dayEnd = 19 * 60;
+      const hourHeight = 46;
+      const period = periodFromItem(item);
+      if (!period) return '';
+      const top = Math.max(0, period.start - dayStart) * hourHeight / 60;
+      const bottom = Math.min(dayEnd, period.end);
+      const height = Math.max(30, (bottom - Math.max(dayStart, period.start)) * hourHeight / 60);
+      const title = `${item.start || '--:--'}${item.end ? ' - ' + item.end : ''}`;
+      return `
+        <button class="week-event ${isPermanent(item) ? 'permanent' : ''}"
+          style="top:${top}px;height:${height}px;"
+          onclick="editarReserva('${item.id}'); event.stopPropagation();">
+          <strong>${escapeHTML(title)}</strong>
+          <span>${escapeHTML(item.owner)}</span>
+          ${item.subject ? `<span>${escapeHTML(item.subject)}</span>` : ''}
+        </button>
+      `;
+    }
+
+    function renderSideList(visible) {
+      const side = document.getElementById('sideList');
+      if (!visible.length) {
+        side.innerHTML = '<div class="empty">Nenhum horario encontrado neste mes.</div>';
+        return;
+      }
+      side.innerHTML = visible.map(item => {
+        const date = itemDate(item);
+        const detail = [item.subject, item.recurrence].filter(Boolean).join(' - ');
+        return `
+          <article class="mini" onclick="editarReserva('${item.id}')">
+            <strong>${formatDate(date)} - ${escapeHTML(item.start || '--:--')}${item.end ? ' ate ' + escapeHTML(item.end) : ''}</strong>
+            <span>${escapeHTML(item.owner)}${detail ? ' - ' + escapeHTML(detail) : ''}${isPermanent(item) ? ' - Permanente' : ''}</span>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function mudarMes(offset) {
+      if (currentView === 'week') {
+        activeDate = addDays(activeDate, offset * 7);
+        activeMonth = monthKey(activeDate);
+      } else {
+        const [year, month] = activeMonth.split('-').map(Number);
+        const date = new Date(year, month - 1 + offset, 1);
+        activeMonth = monthKey(date);
+        activeDate = date;
+      }
+      render();
+    }
+
+    function abrirReserva(dateISO) {
+      const date = dateISO || `${activeMonth}-01`;
+      document.getElementById('reservaTitle').textContent = 'Adicionar horario';
+      document.getElementById('reservaForm').reset();
+      document.getElementById('reservaId').value = '';
+      document.getElementById('dateInput').value = date;
+      document.getElementById('startInput').value = '09:00';
+      document.getElementById('endInput').value = '10:00';
+      document.getElementById('deleteBtn').style.display = 'none';
+      document.getElementById('reservaModal').classList.add('open');
+    }
+
+    function editarReserva(id) {
+      const item = items.find(entry => entry.id === id);
+      if (!item) return;
+      document.getElementById('reservaTitle').textContent = 'Editar horario';
+      document.getElementById('reservaId').value = item.id;
+      document.getElementById('dateInput').value = item.date;
+      document.getElementById('ownerInput').value = item.owner;
+      document.getElementById('startInput').value = item.start;
+      document.getElementById('endInput').value = item.end;
+      document.getElementById('statusInput').value = item.status;
+      document.getElementById('subjectInput').value = item.subject;
+      document.getElementById('recurrenceInput').value = item.recurrence;
+      document.getElementById('deleteBtn').style.display = 'inline-flex';
+      document.getElementById('reservaModal').classList.add('open');
+    }
+
+    function fecharReserva() {
+      document.getElementById('reservaModal').classList.remove('open');
+    }
+
+    function usarHorario(start, end) {
+      document.getElementById('startInput').value = start;
+      document.getElementById('endInput').value = end;
+    }
+
+    function timeToMinutes(value) {
+      const match = String(value || '').match(/^(\d{1,2}):(\d{2})$/);
+      if (!match) return null;
+      return Number(match[1]) * 60 + Number(match[2]);
+    }
+
+    function periodFromItem(item) {
+      const start = timeToMinutes(item.start);
+      if (start === null) return null;
+      let end = timeToMinutes(item.end);
+      if (end === null) end = start + 60;
+      if (end <= start) return null;
+      return { start, end };
+    }
+
+    function findScheduleConflict(record) {
+      const period = periodFromItem(record);
+      if (!period) return null;
+      return items.find(item => {
+        if (item.id === record.id || item.date !== record.date) return false;
+        const existing = periodFromItem(item);
+        if (!existing) return false;
+        return period.start < existing.end && period.end > existing.start;
+      }) || null;
+    }
+
+    function salvarReserva(event) {
+      event.preventDefault();
+      const date = document.getElementById('dateInput').value;
+      const parsed = parseDateISO(date);
+      if (!parsed) return;
+      const id = document.getElementById('reservaId').value || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
+      const existingRecord = items.find(item => item.id === id);
+      const record = {
+        id,
+        date,
+        weekday: WEEKDAYS[parsed.getDay()],
+        start: document.getElementById('startInput').value,
+        end: document.getElementById('endInput').value,
+        owner: document.getElementById('ownerInput').value.trim(),
+        subject: document.getElementById('subjectInput').value.trim(),
+        status: document.getElementById('statusInput').value,
+        recurrence: document.getElementById('recurrenceInput').value.trim(),
+        generated: Boolean(existingRecord && existingRecord.generated)
+      };
+
+      const period = periodFromItem(record);
+      if (!period) {
+        alert('Informe um horario de inicio e fim valido.');
+        return;
+      }
+
+      const conflict = findScheduleConflict(record);
+      if (conflict) {
+        const conflictTime = `${conflict.start || '--:--'}${conflict.end ? ' ate ' + conflict.end : ''}`;
+        alert(`Nao foi possivel salvar. Este periodo ja esta reservado por ${conflict.owner} (${conflictTime}).`);
+        return;
+      }
+
+      const index = items.findIndex(item => item.id === id);
+      if (index >= 0) items[index] = record;
+      else items.push(record);
+      if (isPermanent(record)) items = generatePermanentCopies(items);
+      items.sort(sortItems);
+      activeMonth = date.slice(0, 7);
+      activeDate = parsed;
+      saveItems();
+      fecharReserva();
+      render();
+    }
+
+    function removerReserva() {
+      const id = document.getElementById('reservaId').value;
+      if (!id || !confirm('Remover este agendamento?')) return;
+      items = items.filter(item => item.id !== id);
+      saveItems();
+      fecharReserva();
+      render();
+    }
+
+    async function carregarLogotipo() {
+      try {
+        const { data } = await db
+          .from('config_imagens_site')
+          .select('logotipo')
+          .eq('tipo', 'logo_principal')
+          .order('atualizado_em', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (!data || !data.logotipo) return;
+        const img = document.getElementById('logoPrincipal');
+        img.src = data.logotipo.startsWith('data:image') ? data.logotipo : 'data:image/png;base64,' + data.logotipo;
+        img.style.display = 'block';
+        document.getElementById('logoPlaceholder').style.display = 'none';
+      } catch (error) {}
+    }
+
+    document.getElementById('searchInput').addEventListener('input', render);
+    document.getElementById('monthSelect').addEventListener('change', event => {
+      activeMonth = event.target.value;
+      render();
     });
-</script>
+    document.getElementById('statusSelect').addEventListener('change', render);
+    document.getElementById('viewSelect').addEventListener('change', event => {
+      currentView = event.target.value;
+      const selectedMonth = parseDateISO(`${activeMonth}-01`);
+      if (currentView === 'month' && selectedMonth) activeDate = selectedMonth;
+      render();
+    });
+    document.getElementById('reservaForm').addEventListener('submit', salvarReserva);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        fecharReserva();
+      }
+    });
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', event => {
+        if (event.target === modal) modal.classList.remove('open');
+      });
+    });
 
-
+    carregarLogotipo();
+    loadItems();
+  </script>
 </body>
-
 </html>

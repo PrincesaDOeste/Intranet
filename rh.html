@@ -6,9 +6,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página RH</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <style>
+    :root {
+        --navy: #0f1e6e;
+        --navy-mid: #1a2f88;
+        --teal: #05afaf;
+        --teal-dark: #038a8a;
+        --bg: #f4f6fb;
+        --border: #e2e4ed;
+        --text-1: #0d1340;
+        --text-2: #4a5380;
+        --radius-sm: 6px;
+        --radius-lg: 14px;
+        --shadow-sm: 0 1px 3px rgba(15,30,110,.06), 0 1px 2px rgba(15,30,110,.04);
+    }
+
+    body {
+        min-height: 100vh;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text-1);
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .topbar {
+        height: 66px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 0 28px;
+        background: var(--navy);
+        border-bottom: 1px solid var(--navy-mid);
+    }
+
+    .topbar__logo img {
+        height: 50px;
+        width: auto;
+        display: block;
+        background: #fff;
+        border-radius: var(--radius-sm);
+        padding: 6px 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
+    .topbar__logo-placeholder {
+        height: 50px;
+        display: flex;
+        align-items: center;
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .topbar__logo-placeholder em { color: var(--teal); font-style: normal; }
+    .topbar__divider { width: 1px; height: 24px; background: rgba(255,255,255,.15); }
+    .topbar__title { color: rgba(255,255,255,.65); font-size: 12px; letter-spacing: .6px; text-transform: uppercase; }
+    .admin-page { max-width: 1480px; padding: 28px 24px 48px; }
+    .admin-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 24px; }
+    h1, h2 { color: var(--navy); font-weight: 600; }
+    label { color: var(--text-2); font-weight: 500; }
+    .form-control, .form-select { border-color: var(--border); border-radius: var(--radius-sm); }
+    .form-control:focus, .form-select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(5,175,175,.12); }
+    .btn-primary { background: var(--teal); border-color: var(--teal); }
+    .btn-primary:hover { background: var(--teal-dark); border-color: var(--teal-dark); }
+    .nav-tabs { border-bottom-color: var(--border); }
+    .nav-tabs .nav-link { color: var(--text-2); border: 0; border-bottom: 2px solid transparent; }
+    .nav-tabs .nav-link.active { color: var(--navy); border-bottom-color: var(--teal); font-weight: 600; }
+    .list-group-item { border-color: var(--border); }
+
     /* Rolagem vertical nas listas */
     .list-group {
         max-height: 300px;
@@ -29,11 +96,22 @@
     }
 </style>
 
-<body class="p-4">
-    <div class="container">
+<body>
+    <header class="topbar">
+        <div class="topbar__logo">
+            <img id="logoPrincipal" src="" alt="Logo" style="display:none;">
+            <div class="topbar__logo-placeholder" id="logoPlaceholder">
+                <span>Portal <em>Intranet</em></span>
+            </div>
+        </div>
+        <div class="topbar__divider"></div>
+        <span class="topbar__title">Portal de Comunicação</span>
+    </header>
+
+    <div class="container admin-page">
         <h1 class="text-center">Página RH</h1>
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6 admin-card">
                 <h2>Cadastrar Dados</h2>
                 <form id="cadastroForm">
                     <div class="mb-3">
@@ -43,6 +121,7 @@
                             <option value="feriados">Feriado</option>
                             <option value="cestas">Data para Cestas</option>
                             <option value="eventos">Evento</option>
+                            <option value="cardapio">Cardápio</option>
                             <option value="ramais">Ramal</option>
                             <option value="identidade">Identidade</option>
                         </select>
@@ -59,6 +138,10 @@
                         <div class="mb-3" id="imagemEvento" style="display:none;">
                             <label for="imagem" class="form-label">Imagem do Evento</label>
                             <input type="file" id="imagem" class="form-control" accept="image/*">
+                        </div>
+                        <div class="mb-3" id="imagemCardapio" style="display:none;">
+                            <label for="imagemCardapioInput" class="form-label">Imagem do Cardápio</label>
+                            <input type="file" id="imagemCardapioInput" class="form-control" accept="image/*">
                         </div>
 
                         <!-- Campos para IDENTIDADE (logotipo + imagem destaque) -->
@@ -88,6 +171,7 @@
                 </form>
             </div>
             <div class="col-md-6">
+                <div class="admin-card">
                 <h2>Visualizar Dados</h2>
                 <ul class="nav nav-tabs" id="tabData">
                     <li class="nav-item">
@@ -102,6 +186,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" id="eventos-tab" data-bs-toggle="tab" href="#tabEventos">Eventos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="cardapio-tab" data-bs-toggle="tab" href="#tabCardapio">Cardápio</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" id="ramais-tab" data-bs-toggle="tab" href="#tabRamais">Ramais</a>
@@ -128,6 +215,10 @@
                         <input type="text" class="form-control search-bar" placeholder="Pesquisar eventos...">
                         <ul id="eventosList" class="list-group"></ul>
                     </div>
+                    <div class="tab-pane fade" id="tabCardapio">
+                        <input type="text" class="form-control search-bar" placeholder="Pesquisar cardápios...">
+                        <ul id="cardapioList" class="list-group"></ul>
+                    </div>
                     <div class="tab-pane fade" id="tabRamais">
                         <input type="text" class="form-control search-bar" placeholder="Pesquisar ramais...">
                         <ul id="ramaisList" class="list-group"></ul>
@@ -138,6 +229,7 @@
                         <input type="text" class="form-control search-bar" placeholder="Pesquisar identidade...">
                         <ul id="identidadeList" class="list-group"></ul>
                     </div>
+                </div>
                 </div>
 
                 <script>
@@ -154,6 +246,21 @@
 
                     var supabase = window.supabaseClient;
 
+                    async function carregarLogotipo() {
+                        const { data } = await supabase
+                            .from('config_imagens_site')
+                            .select('logotipo')
+                            .eq('tipo', 'logo_principal')
+                            .order('atualizado_em', { ascending: false })
+                            .limit(1)
+                            .maybeSingle();
+                        if (!data || !data.logotipo) return;
+                        const img = document.getElementById('logoPrincipal');
+                        img.src = data.logotipo.startsWith('data:image') ? data.logotipo : 'data:image/png;base64,' + data.logotipo;
+                        img.style.display = 'block';
+                        document.getElementById('logoPlaceholder').style.display = 'none';
+                    }
+
                     const cadastroForm = document.getElementById('cadastroForm');
                     const tipoInput = document.getElementById('tipo');
                     const nomeInput = document.getElementById('nome');
@@ -163,9 +270,12 @@
                     const feriadosList = document.getElementById('feriadosList');
                     const cestasList = document.getElementById('cestasList');
                     const eventosList = document.getElementById('eventosList');
+                    const cardapioList = document.getElementById('cardapioList');
                     const ramaisList = document.getElementById('ramaisList');
                     const identidadeList = document.getElementById('identidadeList');
                     const imagemEventoDiv = document.getElementById('imagemEvento');
+                    const imagemCardapioDiv = document.getElementById('imagemCardapio');
+                    const imagemCardapioInput = document.getElementById('imagemCardapioInput');
 
                     // elementos identidade
                     const logoIdentidadeDiv = document.getElementById('logoIdentidade');
@@ -174,14 +284,35 @@
                     const imagemDestaqueIdentidadeInput = document.getElementById('imagemDestaqueIdentidade');
 
                     // Função de filtro
+                    function normalizarTexto(valor) {
+                        return String(valor || '')
+                            .toLowerCase()
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '');
+                    }
+
                     function filtrarLista(input) {
-                        const termo = input.value.toLowerCase();
+                        const termo = normalizarTexto(input.value);
                         const lista = input.closest('.tab-pane').querySelector('.list-group');
                         if (!lista) return;
-                        const itens = lista.getElementsByTagName('li');
-                        for (let i = 0; i < itens.length; i++) {
-                            const texto = itens[i].textContent.toLowerCase();
-                            itens[i].style.display = texto.includes(termo) ? '' : 'none';
+
+                        lista.querySelector('.filter-empty')?.remove();
+
+                        const itens = Array.from(lista.querySelectorAll('li:not(.filter-empty)'));
+                        let encontrados = 0;
+
+                        itens.forEach(item => {
+                            const texto = normalizarTexto(item.textContent);
+                            const encontrado = texto.includes(termo);
+                            item.style.display = encontrado ? '' : 'none';
+                            if (encontrado) encontrados++;
+                        });
+
+                        if (termo && encontrados === 0) {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item filter-empty text-muted';
+                            li.textContent = 'Nenhum registro encontrado.';
+                            lista.appendChild(li);
                         }
                     }
 
@@ -189,6 +320,7 @@
                     function adicionarFiltros() {
                         document.querySelectorAll('.search-bar').forEach(input => {
                             input.addEventListener('input', () => filtrarLista(input));
+                            input.addEventListener('search', () => filtrarLista(input));
                         });
                     }
 
@@ -211,7 +343,7 @@
                         if (!confirm('Tem certeza que deseja remover este registro?')) return;
 
                         let tableName = tipo === 'ramais' ? 'employees' : tipo;
-                        if (tipo === 'identidade') tableName = 'config_imagens_site';
+                        if (tipo === 'identidade' || tipo === 'cardapio') tableName = 'config_imagens_site';
 
                         const { error } = await supabase
                             .from(tableName)
@@ -230,13 +362,16 @@
 
 
                     async function carregarDados() {
-                        const tipos = ['aniversariantes', 'feriados', 'cestas', 'eventos', 'ramais', 'identidade'];
+                        const tipos = ['aniversariantes', 'feriados', 'cestas', 'eventos', 'cardapio', 'ramais', 'identidade'];
                         for (const tipo of tipos) {
                             // mapeia nome da tabela
                             let tableName = tipo === 'ramais' ? 'employees' : tipo;
-                            if (tipo === 'identidade') tableName = 'config_imagens_site';
+                            if (tipo === 'identidade' || tipo === 'cardapio') tableName = 'config_imagens_site';
 
-                            const { data, error } = await supabase.from(tableName).select();
+                            let query = supabase.from(tableName).select();
+                            if (tipo === 'identidade') query = query.eq('tipo', 'logo_principal');
+                            if (tipo === 'cardapio') query = query.eq('tipo', 'cardapio');
+                            const { data, error } = await query;
                             if (error) {
                                 console.error(`Erro ao carregar ${tipo}:`, error);
                                 continue;
@@ -246,7 +381,8 @@
                                 tipo === 'feriados' ? feriadosList :
                                     tipo === 'cestas' ? cestasList :
                                         tipo === 'eventos' ? eventosList :
-                                            tipo === 'ramais' ? ramaisList : identidadeList;
+                                            tipo === 'cardapio' ? cardapioList :
+                                                tipo === 'ramais' ? ramaisList : identidadeList;
 
                             list.innerHTML = '';
                             if (!data || data.length === 0) {
@@ -261,7 +397,7 @@
 
                                     if (tipo === 'ramais') {
                                         li.textContent = `${item.name} - ${item.extension} - ${item.department} - ${item.email}`;
-                                    } else if (tipo === 'identidade') {
+                                    } else if (tipo === 'identidade' || tipo === 'cardapio') {
                                         // item is from config_imagens_site
                                         // item.nome, item.tipo, item.descricao, item.logotipo, item.imagem_destaque
                                         const left = document.createElement('div');
@@ -273,7 +409,7 @@
                                         li.appendChild(left);
 
                                         const imgs = document.createElement('div');
-                                        if (item.logotipo) {
+                                        if (tipo === 'identidade' && item.logotipo) {
                                             const img = document.createElement('img');
                                             img.src = item.logotipo; // já é dataURL
                                             img.alt = 'logotipo';
@@ -310,6 +446,9 @@
                                 });
                             }
                         }
+                        document.querySelectorAll('.search-bar').forEach(input => {
+                            if (input.value.trim()) filtrarLista(input);
+                        });
                     }
 
                     cadastroForm.addEventListener('submit', async (e) => {
@@ -318,6 +457,7 @@
                         const nome = nomeInput.value.trim();
                         const data = tipo !== 'ramais' ? dataInput.value : null;
                         const imagem = tipo === 'eventos' ? imagemInput.files[0] : null;
+                        const imagemCardapio = tipo === 'cardapio' ? imagemCardapioInput.files[0] : null;
                         const ramal = tipo === 'ramais' ? document.getElementById('ramal').value : null;
                         const setor = tipo === 'ramais' ? document.getElementById('setor').value : null;
                         const email = tipo === 'ramais' ? document.getElementById('email').value : null;
@@ -329,7 +469,7 @@
                         }
 
                         // data é obrigatória para todos exceto ramais e identidade
-                        if (tipo !== 'ramais' && tipo !== 'identidade' && !data) {
+                        if (tipo !== 'ramais' && tipo !== 'identidade' && tipo !== 'cardapio' && !data) {
                             alert("Por favor, informe a data.");
                             return;
                         }
@@ -343,6 +483,11 @@
                         // validação eventos (mantive o comportamento atual: pede imagem)
                         if (tipo === 'eventos' && !imagem) {
                             alert("Por favor, selecione a imagem do evento.");
+                            return;
+                        }
+
+                        if (tipo === 'cardapio' && !imagemCardapio) {
+                            alert("Por favor, selecione a imagem do cardápio.");
                             return;
                         }
 
@@ -399,6 +544,36 @@
                             }
                         }
 
+                        // ===== CARDÁPIO =====
+                        if (tipo === 'cardapio') {
+                            try {
+                                const cardapioDataUrl = await fileToDataURL(imagemCardapio);
+                                ({ error } = await supabase.from('config_imagens_site').insert([{
+                                    nome: nome,
+                                    tipo: 'cardapio',
+                                    descricao: 'Cardápio cadastrado via painel',
+                                    imagem_destaque: cardapioDataUrl,
+                                    atualizado_em: new Date()
+                                }]));
+
+                                if (error) {
+                                    alert('Erro ao cadastrar cardápio: ' + error.message);
+                                    return;
+                                }
+
+                                alert('Cardápio cadastrado com sucesso!');
+                                nomeInput.value = '';
+                                dataInput.value = '';
+                                imagemCardapioInput.value = '';
+                                carregarDados();
+                                return;
+                            } catch (err) {
+                                console.error(err);
+                                alert('Erro ao processar imagem do cardápio.');
+                                return;
+                            }
+                        }
+
 
                         // ===== RAMAIS =====
                         if (tipo === 'ramais') {
@@ -439,6 +614,7 @@
                     tipoInput.addEventListener('change', () => {
                         const tipo = tipoInput.value;
                         imagemEventoDiv.style.display = 'none';
+                        imagemCardapioDiv.style.display = 'none';
                         document.getElementById('dataField').style.display = 'none';
                         document.getElementById('ramalFields').style.display = 'none';
                         logoIdentidadeDiv.style.display = 'none';
@@ -447,6 +623,8 @@
                         if (tipo === 'eventos') {
                             imagemEventoDiv.style.display = 'block';
                             document.getElementById('dataField').style.display = 'block';
+                        } else if (tipo === 'cardapio') {
+                            imagemCardapioDiv.style.display = 'block';
                         } else if (tipo === 'ramais') {
                             document.getElementById('ramalFields').style.display = 'block';
                         } else if (tipo === 'identidade') {
@@ -458,9 +636,13 @@
                     });
 
                     // Inicialização
+                    carregarLogotipo();
                     adicionarFiltros();
                     carregarDados();
                 </script>
+            </div>
+        </div>
+    </div>
 
                 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"></script>
