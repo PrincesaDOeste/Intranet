@@ -208,6 +208,7 @@
     .card__body { padding: 16px 18px; }
 
     .identity-section {
+      margin-top: 28px;
       margin-bottom: 20px;
     }
 
@@ -287,7 +288,7 @@
     #carouselEventos,
     #carouselEventos .carousel-inner,
     #carouselEventos .carousel-item {
-      height: clamp(360px, 32vw, 560px);
+      height: auto;
     }
 
     #carouselEventos {
@@ -296,8 +297,11 @@
 
     #carouselEventos .carousel-item img {
       width: 100%;
-      height: 100%;
-      object-fit: fill;
+      height: auto;
+      max-height: none;
+      object-fit: cover;
+      background: transparent;
+      border-radius: 10px;
       display: block;
     }
     #carouselEventos .carousel-control-prev,
@@ -667,15 +671,17 @@
         align-items: start;
       }
       .identity-grid { grid-template-columns: 1fr; }
+      .identity-section { margin-top: 24px; }
       .grid-main > div:first-child > .card { flex: initial; }
       #carouselEventos,
       #carouselEventos .carousel-inner,
       #carouselEventos .carousel-item {
-        height: clamp(320px, 45vw, 460px);
+        height: auto;
       }
       #carouselEventos .carousel-item img {
-        height: 100%;
-        object-fit: fill;
+        height: auto;
+        max-height: none;
+        object-fit: cover;
       }
     }
 
@@ -695,9 +701,13 @@
       #carouselEventos,
       #carouselEventos .carousel-inner,
       #carouselEventos .carousel-item {
-        height: clamp(260px, 58vw, 360px);
+        height: auto;
       }
-      #carouselEventos .carousel-item img { height: 100%; }
+      #carouselEventos .carousel-item img {
+        height: auto;
+        max-height: none;
+        object-fit: cover;
+      }
       .identity-card { padding: 18px; min-height: 0; }
       .tabs-row {
         overflow-x: auto;
