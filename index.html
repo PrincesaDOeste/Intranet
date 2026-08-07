@@ -741,7 +741,7 @@
         Cardápio
       </button>
       <button class="btn-top"
-        onclick="openFullPopup('Sala_de_reuni%C3%A3o.Html')">
+        onclick="abrirSalaReuniao()">
         Sala de reuni&atilde;o
       </button>
       <button class="btn-top"
@@ -939,6 +939,16 @@
   <script>
     function openFullPopup(url, w, h) {
       window.open(url, '_blank');
+    }
+
+    function abrirSalaReuniao() {
+      const senha = prompt('Informar a senha de acesso');
+      if (senha === null) return;
+      if (senha === 'Padrao123@') {
+        openFullPopup('Sala_de_reuni%C3%A3o.Html');
+        return;
+      }
+      alert('Senha de acesso incorreta.');
     }
 
    /* ── SUPABASE ── */

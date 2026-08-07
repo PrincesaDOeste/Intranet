@@ -1320,8 +1320,18 @@
       });
     });
 
-    carregarLogotipo();
-    loadItems();
+    function validarAcessoSala() {
+      const senha = prompt('Informar a senha de acesso');
+      if (senha === 'Padrao123@') return true;
+      alert('Senha de acesso incorreta.');
+      window.location.href = 'index.html';
+      return false;
+    }
+
+    if (validarAcessoSala()) {
+      carregarLogotipo();
+      loadItems();
+    }
   </script>
 </body>
 </html>
