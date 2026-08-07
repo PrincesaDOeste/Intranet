@@ -711,6 +711,7 @@
         </div>
         <div class="modal-actions">
           <button class="btn btn-danger" type="button" id="deleteBtn" onclick="removerReserva()" style="display:none;">Remover</button>
+          <button class="btn" type="button" id="adminDeleteBtn" onclick="removerReservaAdmin()" style="display:none;">Admin</button>
           <button class="btn btn-primary" type="submit">Salvar</button>
         </div>
       </form>
@@ -1171,6 +1172,7 @@
       document.getElementById('startInput').value = '09:00';
       document.getElementById('endInput').value = '10:00';
       document.getElementById('deleteBtn').style.display = 'none';
+      document.getElementById('adminDeleteBtn').style.display = 'none';
       document.getElementById('reservaModal').classList.add('open');
     }
 
@@ -1187,6 +1189,7 @@
       document.getElementById('subjectInput').value = item.subject;
       document.getElementById('recurrenceInput').value = item.recurrence;
       document.getElementById('deleteBtn').style.display = 'inline-flex';
+      document.getElementById('adminDeleteBtn').style.display = 'inline-flex';
       document.getElementById('reservaModal').classList.add('open');
     }
 
@@ -1270,9 +1273,38 @@
       render();
     }
 
+    async function validarRemocaoEloisa() {
+      const senha = prompt('Informe a senha da usuaria Eloisa para remover');
+      if (senha === null) return false;
+      if (!senha.trim()) {
+        alert('Senha obrigatoria para remover.');
+        return false;
+      }
+
+      const { data, error } = await db
+        .from('users')
+        .select('id')
+        .ilike('username', 'eloisa')
+        .eq('password', senha)
+        .limit(1)
+        .maybeSingle();
+
+      if (error || !data) {
+        alert('Somente a usuaria Eloisa pode remover agendamentos.');
+        return false;
+      }
+      return true;
+    }
+
     function removerReserva() {
+      alert('Para remover este agendamento, entre em contato com a Eloisa no ramal 2200.');
+    }
+
+    async function removerReservaAdmin() {
       const id = document.getElementById('reservaId').value;
       if (!id || !confirm('Remover este agendamento?')) return;
+      const autorizado = await validarRemocaoEloisa();
+      if (!autorizado) return;
       items = items.filter(item => item.id !== id);
       saveItems();
       fecharReserva();
