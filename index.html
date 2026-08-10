@@ -946,14 +946,7 @@
     }
 
     function abrirSalaReuniao() {
-      const senha = prompt('Informar a senha de acesso');
-      if (senha === null) return;
-      if (senha === 'Padrao123@') {
-        localStorage.setItem('salaReuniaoAcessoLiberadoAte', String(Date.now() + 30000));
-        openFullPopup('Sala_de_reuni%C3%A3o.Html');
-        return;
-      }
-      alert('Senha de acesso incorreta.');
+      openFullPopup('Sala_de_reuni%C3%A3o.Html');
     }
 
    /* ── SUPABASE ── */
