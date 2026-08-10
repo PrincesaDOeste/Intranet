@@ -1353,6 +1353,12 @@
     });
 
     function validarAcessoSala() {
+      const acessoLiberadoAte = Number(localStorage.getItem('salaReuniaoAcessoLiberadoAte') || 0);
+      if (acessoLiberadoAte > Date.now()) {
+        localStorage.removeItem('salaReuniaoAcessoLiberadoAte');
+        return true;
+      }
+
       const senha = prompt('Informar a senha de acesso');
       if (senha === 'Padrao123@') return true;
       alert('Senha de acesso incorreta.');
