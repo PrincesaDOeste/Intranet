@@ -75,6 +75,7 @@
     .nav-tabs .nav-link { color: var(--text-2); border: 0; border-bottom: 2px solid transparent; }
     .nav-tabs .nav-link.active { color: var(--navy); border-bottom-color: var(--teal); font-weight: 600; }
     .list-group-item { border-color: var(--border); }
+    .filter-hidden { display: none !important; }
 
     /* Rolagem vertical nas listas */
     .list-group {
@@ -167,7 +168,8 @@
                             <input type="email" id="email" class="form-control">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Cadastrar</button>
+                    <button type="submit" id="submitBtn" class="btn btn-primary">Cadastrar</button>
+                    <button type="button" id="cancelEditBtn" class="btn btn-secondary ms-2" style="display:none;">Cancelar edição</button>
                 </form>
             </div>
             <div class="col-md-6">
@@ -200,33 +202,33 @@
                 </ul>
                 <div class="tab-content mt-3">
                     <div class="tab-pane fade show active" id="tabAniversariantes">
-                        <input type="text" class="form-control search-bar" placeholder="Pesquisar aniversariantes...">
+                        <input type="search" class="form-control search-bar" placeholder="Pesquisar aniversariantes..." oninput="filtrarLista(this)" onsearch="filtrarLista(this)">
                         <ul id="aniversariantesList" class="list-group"></ul>
                     </div>
                     <div class="tab-pane fade" id="tabFeriados">
-                        <input type="text" class="form-control search-bar" placeholder="Pesquisar feriados...">
+                        <input type="search" class="form-control search-bar" placeholder="Pesquisar feriados..." oninput="filtrarLista(this)" onsearch="filtrarLista(this)">
                         <ul id="feriadosList" class="list-group"></ul>
                     </div>
                     <div class="tab-pane fade" id="tabCestas">
-                        <input type="text" class="form-control search-bar" placeholder="Pesquisar datas de cestas...">
+                        <input type="search" class="form-control search-bar" placeholder="Pesquisar datas de cestas..." oninput="filtrarLista(this)" onsearch="filtrarLista(this)">
                         <ul id="cestasList" class="list-group"></ul>
                     </div>
                     <div class="tab-pane fade" id="tabEventos">
-                        <input type="text" class="form-control search-bar" placeholder="Pesquisar eventos...">
+                        <input type="search" class="form-control search-bar" placeholder="Pesquisar eventos..." oninput="filtrarLista(this)" onsearch="filtrarLista(this)">
                         <ul id="eventosList" class="list-group"></ul>
                     </div>
                     <div class="tab-pane fade" id="tabCardapio">
-                        <input type="text" class="form-control search-bar" placeholder="Pesquisar cardápios...">
+                        <input type="search" class="form-control search-bar" placeholder="Pesquisar cardápios..." oninput="filtrarLista(this)" onsearch="filtrarLista(this)">
                         <ul id="cardapioList" class="list-group"></ul>
                     </div>
                     <div class="tab-pane fade" id="tabRamais">
-                        <input type="text" class="form-control search-bar" placeholder="Pesquisar ramais...">
+                        <input type="search" class="form-control search-bar" placeholder="Pesquisar ramais..." oninput="filtrarLista(this)" onsearch="filtrarLista(this)">
                         <ul id="ramaisList" class="list-group"></ul>
                     </div>
 
                     <!-- Aba Identidade -->
                     <div class="tab-pane fade" id="tabIdentidade">
-                        <input type="text" class="form-control search-bar" placeholder="Pesquisar identidade...">
+                        <input type="search" class="form-control search-bar" placeholder="Pesquisar identidade..." oninput="filtrarLista(this)" onsearch="filtrarLista(this)">
                         <ul id="identidadeList" class="list-group"></ul>
                     </div>
                 </div>
@@ -276,6 +278,9 @@
                     const imagemEventoDiv = document.getElementById('imagemEvento');
                     const imagemCardapioDiv = document.getElementById('imagemCardapio');
                     const imagemCardapioInput = document.getElementById('imagemCardapioInput');
+                    const submitBtn = document.getElementById('submitBtn');
+                    const cancelEditBtn = document.getElementById('cancelEditBtn');
+                    let ramalEditandoId = null;
 
                     // elementos identidade
                     const logoIdentidadeDiv = document.getElementById('logoIdentidade');
@@ -302,9 +307,9 @@
                         let encontrados = 0;
 
                         itens.forEach(item => {
-                            const texto = normalizarTexto(item.textContent);
+                            const texto = normalizarTexto(item.dataset.search || item.textContent);
                             const encontrado = texto.includes(termo);
-                            item.style.display = encontrado ? '' : 'none';
+                            item.classList.toggle('filter-hidden', !encontrado);
                             if (encontrado) encontrados++;
                         });
 
@@ -318,9 +323,11 @@
 
                     // Adiciona listeners de pesquisa
                     function adicionarFiltros() {
-                        document.querySelectorAll('.search-bar').forEach(input => {
-                            input.addEventListener('input', () => filtrarLista(input));
-                            input.addEventListener('search', () => filtrarLista(input));
+                        document.addEventListener('input', event => {
+                            if (event.target.classList.contains('search-bar')) filtrarLista(event.target);
+                        });
+                        document.addEventListener('search', event => {
+                            if (event.target.classList.contains('search-bar')) filtrarLista(event.target);
                         });
                     }
 
@@ -338,6 +345,31 @@
                         const [ano, mes, dia] = dataISO.split('-');
                         return `${dia}/${mes}/${ano}`;
                     }
+
+                    function limparFormularioRamal() {
+                        ramalEditandoId = null;
+                        submitBtn.textContent = 'Cadastrar';
+                        cancelEditBtn.style.display = 'none';
+                        nomeInput.value = '';
+                        document.getElementById('ramal').value = '';
+                        document.getElementById('setor').value = '';
+                        document.getElementById('email').value = '';
+                    }
+
+                    window.editarRamal = function (item) {
+                        ramalEditandoId = item.id;
+                        tipoInput.value = 'ramais';
+                        tipoInput.dispatchEvent(new Event('change'));
+                        nomeInput.value = item.name || '';
+                        document.getElementById('ramal').value = item.extension || '';
+                        document.getElementById('setor').value = item.department || '';
+                        document.getElementById('email').value = item.email || '';
+                        submitBtn.textContent = 'Salvar alteração';
+                        cancelEditBtn.style.display = 'inline-block';
+                        cadastroForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    };
+
+                    cancelEditBtn.addEventListener('click', limparFormularioRamal);
 
                     window.removerDados = async function (tipo, id) {
                         if (!confirm('Tem certeza que deseja remover este registro?')) return;
@@ -357,6 +389,9 @@
                         }
 
                         alert('Registro removido com sucesso!');
+                        if (tipo === 'ramais' && ramalEditandoId === id) {
+                            limparFormularioRamal();
+                        }
                         carregarDados();
                     };
 
@@ -396,8 +431,19 @@
                                     li.className = 'list-group-item d-flex justify-content-between align-items-center';
 
                                     if (tipo === 'ramais') {
+                                        li.dataset.search = [
+                                            item.name,
+                                            item.extension,
+                                            item.department,
+                                            item.email
+                                        ].filter(Boolean).join(' ');
                                         li.textContent = `${item.name} - ${item.extension} - ${item.department} - ${item.email}`;
                                     } else if (tipo === 'identidade' || tipo === 'cardapio') {
+                                        li.dataset.search = [
+                                            item.nome,
+                                            item.tipo,
+                                            item.descricao
+                                        ].filter(Boolean).join(' ');
                                         // item is from config_imagens_site
                                         // item.nome, item.tipo, item.descricao, item.logotipo, item.imagem_destaque
                                         const left = document.createElement('div');
@@ -425,6 +471,11 @@
                                         }
                                         li.appendChild(imgs);
                                     } else {
+                                        li.dataset.search = [
+                                            item.nome,
+                                            item.data,
+                                            formatarDataBR(item.data)
+                                        ].filter(Boolean).join(' ');
                                         li.textContent = `${item.nome || ''} - ${formatarDataBR(item.data)}`;
                                         if (item.imagem_url) {
                                             const img = document.createElement('img');
@@ -436,11 +487,23 @@
                                         }
                                     }
 
+                                    const actions = document.createElement('div');
+                                    actions.className = 'd-flex gap-2 ms-3';
+
+                                    if (tipo === 'ramais') {
+                                        const editBtn = document.createElement('button');
+                                        editBtn.className = 'btn btn-primary btn-sm';
+                                        editBtn.textContent = 'Editar';
+                                        editBtn.onclick = () => editarRamal(item);
+                                        actions.appendChild(editBtn);
+                                    }
+
                                     const btn = document.createElement('button');
                                     btn.className = 'btn btn-danger btn-sm';
                                     btn.textContent = 'Remover';
                                     btn.onclick = () => removerDados(tipo, item.id);
-                                    li.appendChild(btn);
+                                    actions.appendChild(btn);
+                                    li.appendChild(actions);
 
                                     list.appendChild(li);
                                 });
@@ -493,6 +556,7 @@
 
                         let dados = {};
                         let error;
+                        let successMessage = 'Cadastro realizado com sucesso!';
 
                         // ===== IDENTIDADE (0, 1 ou 2 imagens aceitas) =====
                         // ===== IDENTIDADE (0, 1 ou 2 imagens aceitas) =====
@@ -578,7 +642,15 @@
                         // ===== RAMAIS =====
                         if (tipo === 'ramais') {
                             dados = { name: nome, extension: ramal, department: setor, email: email };
-                            ({ error } = await supabase.from('employees').insert([dados]));
+                            if (ramalEditandoId) {
+                                ({ error } = await supabase
+                                    .from('employees')
+                                    .update(dados)
+                                    .eq('id', ramalEditandoId));
+                                successMessage = 'Ramal atualizado com sucesso!';
+                            } else {
+                                ({ error } = await supabase.from('employees').insert([dados]));
+                            }
                         } else {
                             // ===== EVENTOS / ANIVERSARIANTES / FERIADOS / CESTAS =====
                             let imagemUrl = '';
@@ -602,10 +674,14 @@
                             return;
                         }
 
-                        alert('Cadastro realizado com sucesso!');
+                        alert(successMessage);
                         // limpa campos comuns
-                        nomeInput.value = '';
-                        dataInput.value = '';
+                        if (tipo === 'ramais') {
+                            limparFormularioRamal();
+                        } else {
+                            nomeInput.value = '';
+                            dataInput.value = '';
+                        }
                         if (imagemInput) imagemInput.value = '';
                         carregarDados();
                     });
@@ -613,6 +689,11 @@
 
                     tipoInput.addEventListener('change', () => {
                         const tipo = tipoInput.value;
+                        if (tipo !== 'ramais' && ramalEditandoId) {
+                            ramalEditandoId = null;
+                            submitBtn.textContent = 'Cadastrar';
+                            cancelEditBtn.style.display = 'none';
+                        }
                         imagemEventoDiv.style.display = 'none';
                         imagemCardapioDiv.style.display = 'none';
                         document.getElementById('dataField').style.display = 'none';
