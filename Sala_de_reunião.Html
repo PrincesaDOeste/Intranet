@@ -711,6 +711,8 @@
         </div>
         <div class="modal-actions">
           <button class="btn btn-danger" type="button" id="deleteBtn" onclick="removerReservaAdmin()" style="display:none;">Remover</button>
+          <button class="btn btn-danger" type="button" id="deleteFutureBtn" onclick="removerReservaAdmin('future')" style="display:none;">Excluir permanente</button>
+          <button class="btn btn-primary" type="button" id="deleteSingleBtn" onclick="removerReservaAdmin('single')" style="display:none;">Somente esse dia</button>
           <button class="btn btn-primary" type="submit">Salvar</button>
         </div>
       </form>
@@ -1333,7 +1335,15 @@
       document.getElementById('statusInput').value = item.status;
       document.getElementById('subjectInput').value = item.subject;
       document.getElementById('recurrenceInput').value = item.recurrence;
-      document.getElementById('deleteBtn').style.display = 'inline-flex';
+      if (isPermanent(item)) {
+        document.getElementById('deleteBtn').style.display = 'none';
+        document.getElementById('deleteFutureBtn').style.display = 'inline-flex';
+        document.getElementById('deleteSingleBtn').style.display = 'inline-flex';
+      } else {
+        document.getElementById('deleteBtn').style.display = 'inline-flex';
+        document.getElementById('deleteFutureBtn').style.display = 'none';
+        document.getElementById('deleteSingleBtn').style.display = 'none';
+      }
       document.getElementById('reservaModal').classList.add('open');
     }
 
@@ -1487,7 +1497,7 @@
       }
     }
 
-    async function removerReservaAdmin() {
+    async function removerReservaAdmin(modoExclusao = null) {
       const id = document.getElementById('reservaId').value;
       if (!id) return;
       const item = items.find(entry => entry.id === id);
@@ -1497,7 +1507,7 @@
 
       let baseItems = storageItems();
       if (isPermanent(item)) {
-        const escolha = await escolherExclusaoPermanente(item);
+        const escolha = modoExclusao || await escolherExclusaoPermanente(item);
         if (!escolha) return;
         if (escolha === 'future') {
           const key = recurrenceKey(item);
@@ -1522,8 +1532,11 @@
         return;
       }
       fecharReserva();
+      resolverExclusaoPermanente(null);
       render();
+      alert('Agendamento removido com sucesso.');
     }
+
     async function carregarLogotipo() {
       try {
         const { data } = await db
