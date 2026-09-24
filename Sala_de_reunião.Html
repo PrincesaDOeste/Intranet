@@ -710,14 +710,29 @@
           </div>
         </div>
         <div class="modal-actions">
-          <button class="btn btn-danger" type="button" id="deleteBtn" onclick="removerReserva()" style="display:none;">Remover</button>
-          <button class="btn" type="button" id="adminDeleteBtn" onclick="removerReservaAdmin()" style="display:none;">Admin</button>
+          <button class="btn btn-danger" type="button" id="deleteBtn" onclick="removerReservaAdmin()" style="display:none;">Remover</button>
           <button class="btn btn-primary" type="submit">Salvar</button>
         </div>
       </form>
     </div>
   </div>
 
+  <div class="modal" id="deleteChoiceModal" role="dialog" aria-modal="true" aria-labelledby="deleteChoiceTitle">
+    <div class="modal-dialog" style="max-width:520px;">
+      <div class="modal-header">
+        <span class="modal-title" id="deleteChoiceTitle">Excluir agendamento permanente</span>
+        <button class="btn" type="button" onclick="resolverExclusaoPermanente(null)">Fechar</button>
+      </div>
+      <div class="modal-body">
+        <p class="subtitle" id="deleteChoiceText" style="margin:0 0 14px;color:var(--text);">Escolha como deseja excluir este agendamento.</p>
+        <div class="modal-actions">
+          <button class="btn btn-danger" type="button" onclick="resolverExclusaoPermanente('future')">Excluir permanente</button>
+          <button class="btn btn-primary" type="button" onclick="resolverExclusaoPermanente('single')">Somente esse dia</button>
+          <button class="btn" type="button" onclick="resolverExclusaoPermanente(null)">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <script>
     const SUPABASE_URL = 'https://woywqncdfuyworcbjjlv.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXdxbmNkZnV5d29yY2Jqamx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMTUyNzgsImV4cCI6MjA2MDU5MTI3OH0.o63pZx8l8oe1aEYKEaYVQyHgEvR5FGkfAygTLTvWWVA';
@@ -1303,7 +1318,6 @@
       document.getElementById('startInput').value = '09:00';
       document.getElementById('endInput').value = '10:00';
       document.getElementById('deleteBtn').style.display = 'none';
-      document.getElementById('adminDeleteBtn').style.display = 'none';
       document.getElementById('reservaModal').classList.add('open');
     }
 
@@ -1320,7 +1334,6 @@
       document.getElementById('subjectInput').value = item.subject;
       document.getElementById('recurrenceInput').value = item.recurrence;
       document.getElementById('deleteBtn').style.display = 'inline-flex';
-      document.getElementById('adminDeleteBtn').style.display = 'inline-flex';
       document.getElementById('reservaModal').classList.add('open');
     }
 
@@ -1453,9 +1466,23 @@
       }
       return true;
     }
+    let resolverExclusaoPermanenteAtual = null;
 
-    function removerReserva() {
-      alert('Para remover este agendamento, entre em contato com a Eloisa no ramal 2200.');
+    function escolherExclusaoPermanente(item) {
+      return new Promise(resolve => {
+        resolverExclusaoPermanenteAtual = resolve;
+        const texto = document.getElementById('deleteChoiceText');
+        texto.textContent = `${item.owner || 'Agendamento'} - ${item.start || '--:--'} ate ${item.end || '--:--'}. Excluir todos os proximos dias deste permanente ou somente este dia?`;
+        document.getElementById('deleteChoiceModal').classList.add('open');
+      });
+    }
+
+    function resolverExclusaoPermanente(opcao) {
+      document.getElementById('deleteChoiceModal').classList.remove('open');
+      if (resolverExclusaoPermanenteAtual) {
+        resolverExclusaoPermanenteAtual(opcao);
+        resolverExclusaoPermanenteAtual = null;
+      }
     }
 
     async function removerReservaAdmin() {
@@ -1468,8 +1495,9 @@
 
       let baseItems = storageItems();
       if (isPermanent(item)) {
-        const removerSerie = confirm('Este agendamento e permanente. Deseja excluir este dia e os proximos dias da serie?\n\nOK = excluir este e os proximos dias\nCancelar = excluir somente este dia');
-        if (removerSerie) {
+        const escolha = await escolherExclusaoPermanente(item);
+        if (!escolha) return;
+        if (escolha === 'future') {
           const key = recurrenceKey(item);
           setRecurrenceStop(key, item.date);
           baseItems = baseItems.filter(entry => !(recurrenceKey(entry) === key && entry.date >= item.date));
@@ -1494,7 +1522,6 @@
       fecharReserva();
       render();
     }
-
     async function carregarLogotipo() {
       try {
         const { data } = await db
@@ -1532,7 +1559,10 @@
     });
     document.querySelectorAll('.modal').forEach(modal => {
       modal.addEventListener('click', event => {
-        if (event.target === modal) modal.classList.remove('open');
+        if (event.target === modal) {
+          if (modal.id === 'deleteChoiceModal') resolverExclusaoPermanente(null);
+          else modal.classList.remove('open');
+        }
       });
     });
 
