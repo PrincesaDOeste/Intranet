@@ -966,19 +966,29 @@ async function abrirCardapioPopup() {
   try {
     const { data, error } = await db
       .from('config_imagens_site')
-      .select('nome, imagem_destaque, atualizado_em')
+      .select('nome, descricao, imagem_destaque, atualizado_em')
       .eq('tipo', 'cardapio')
-      .order('atualizado_em', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .order('atualizado_em', { ascending: false });
 
     if (error) throw error;
-    if (!data || !data.imagem_destaque) {
-      body.innerHTML = '<div class="menu-popup__empty">Nenhum cardápio cadastrado.</div>';
+    const hoje = new Date().toISOString().slice(0, 10);
+    const cardapioAtual = (data || []).find(item => {
+      if (!item.imagem_destaque) return false;
+      try {
+        const meta = JSON.parse(item.descricao || '{}');
+        if (meta && meta.tipoMeta === 'cardapio_periodo') {
+          return (!meta.inicio || meta.inicio <= hoje) && (!meta.fim || meta.fim >= hoje);
+        }
+      } catch (error) {}
+      return true;
+    });
+
+    if (!cardapioAtual || !cardapioAtual.imagem_destaque) {
+      body.innerHTML = '<div class="menu-popup__empty">Nenhum cardápio disponível para hoje.</div>';
       return;
     }
 
-    body.innerHTML = `<img class="menu-popup__image" src="${data.imagem_destaque}" alt="${data.nome || 'Cardápio'}">`;
+    body.innerHTML = `<img class="menu-popup__image" src="${cardapioAtual.imagem_destaque}" alt="${cardapioAtual.nome || 'Cardápio'}">`;
   } catch (err) {
     console.error('Cardápio:', err);
     body.innerHTML = '<div class="menu-popup__empty">Não foi possível carregar o cardápio.</div>';

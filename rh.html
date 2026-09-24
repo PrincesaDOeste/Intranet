@@ -144,6 +144,16 @@
                             <label for="imagemCardapioInput" class="form-label">Imagem do Cardápio</label>
                             <input type="file" id="imagemCardapioInput" class="form-control" accept="image/*">
                         </div>
+                        <div class="row" id="periodoCardapio" style="display:none;">
+                            <div class="col-md-6 mb-3">
+                                <label for="cardapioInicio" class="form-label">Início de exibição</label>
+                                <input type="date" id="cardapioInicio" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="cardapioFim" class="form-label">Fim de exibição</label>
+                                <input type="date" id="cardapioFim" class="form-control">
+                            </div>
+                        </div>
                         <!-- Campos para IDENTIDADE (logotipo + imagem destaque) -->
                         <div class="mb-3" id="logoIdentidade" style="display:none;">
                             <label for="logotipo" class="form-label">Logotipo</label>
@@ -275,6 +285,9 @@
                     const imagemEventoDiv = document.getElementById('imagemEvento');
                     const imagemCardapioDiv = document.getElementById('imagemCardapio');
                     const imagemCardapioInput = document.getElementById('imagemCardapioInput');
+                    const periodoCardapioDiv = document.getElementById('periodoCardapio');
+                    const cardapioInicioInput = document.getElementById('cardapioInicio');
+                    const cardapioFimInput = document.getElementById('cardapioFim');
                     const submitBtn = document.getElementById('submitBtn');
                     const cancelEditBtn = document.getElementById('cancelEditBtn');
                     let ramalEditandoId = null;
@@ -367,6 +380,21 @@
                     };
 
                     cancelEditBtn.addEventListener('click', limparFormularioRamal);
+
+
+                    function cardapioPeriodoInfo(descricao) {
+                        try {
+                            const meta = JSON.parse(descricao || '{}');
+                            if (!meta || meta.tipoMeta !== 'cardapio_periodo') return { texto: descricao || '', inicio: '', fim: '' };
+                            const partes = [];
+                            if (meta.inicio) partes.push(`Início: ${meta.inicio.split('-').reverse().join('/')}`);
+                            if (meta.fim) partes.push(`Fim: ${meta.fim.split('-').reverse().join('/')}`);
+                            return { texto: partes.join(' | '), inicio: meta.inicio || '', fim: meta.fim || '' };
+                        } catch (error) {
+                            return { texto: descricao || '', inicio: '', fim: '' };
+                        }
+                    }
+
                     window.removerDados = async function (tipo, id) {
                         if (!confirm('Tem certeza que deseja remover este registro?')) return;
 
@@ -517,6 +545,8 @@
                         const data = tipo !== 'ramais' ? dataInput.value : null;
                         const imagem = tipo === 'eventos' ? imagemInput.files[0] : null;
                         const imagemCardapio = tipo === 'cardapio' ? imagemCardapioInput.files[0] : null;
+                        const cardapioInicio = tipo === 'cardapio' ? cardapioInicioInput.value : '';
+                        const cardapioFim = tipo === 'cardapio' ? cardapioFimInput.value : '';
                         const ramal = tipo === 'ramais' ? document.getElementById('ramal').value : null;
                         const setor = tipo === 'ramais' ? document.getElementById('setor').value : null;
                         const email = tipo === 'ramais' ? document.getElementById('email').value : null;
@@ -610,7 +640,12 @@
                                 ({ error } = await supabase.from('config_imagens_site').insert([{
                                     nome: nome,
                                     tipo: 'cardapio',
-                                    descricao: 'Cardápio cadastrado via painel',
+                                    descricao: JSON.stringify({
+                                        tipoMeta: 'cardapio_periodo',
+                                        inicio: cardapioInicio,
+                                        fim: cardapioFim,
+                                        texto: 'Cardápio cadastrado via painel'
+                                    }),
                                     imagem_destaque: cardapioDataUrl,
                                     atualizado_em: new Date()
                                 }]));
@@ -689,6 +724,7 @@
                         }
                         imagemEventoDiv.style.display = 'none';
                         imagemCardapioDiv.style.display = 'none';
+                        periodoCardapioDiv.style.display = 'none';
                         document.getElementById('dataField').style.display = 'none';
                         document.getElementById('ramalFields').style.display = 'none';
                         logoIdentidadeDiv.style.display = 'none';
@@ -698,7 +734,9 @@
                             imagemEventoDiv.style.display = 'block';
                             document.getElementById('dataField').style.display = 'block';
                         } else if (tipo === 'cardapio') {
-                            imagemCardapioDiv.style.display = 'block';                        } else if (tipo === 'ramais') {
+                            imagemCardapioDiv.style.display = 'block';
+                            periodoCardapioDiv.style.display = 'flex';
+                        } else if (tipo === 'ramais') {
                             document.getElementById('ramalFields').style.display = 'block';
                         } else if (tipo === 'identidade') {
                             logoIdentidadeDiv.style.display = 'block';
