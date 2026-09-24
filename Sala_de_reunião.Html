@@ -1538,7 +1538,7 @@
 
     function validarAcessoSala() {
       const senha = prompt('Informar a senha de acesso');
-      if (senha === 'PDO') return true;
+      if (String(senha || '').trim().toLowerCase() === 'pdo') return true;
       alert('Senha de acesso incorreta.');
       window.location.href = 'index.html';
       return false;
