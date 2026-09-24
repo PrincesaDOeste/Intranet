@@ -144,7 +144,6 @@
                             <label for="imagemCardapioInput" class="form-label">Imagem do Cardápio</label>
                             <input type="file" id="imagemCardapioInput" class="form-control" accept="image/*">
                         </div>
-
                         <!-- Campos para IDENTIDADE (logotipo + imagem destaque) -->
                         <div class="mb-3" id="logoIdentidade" style="display:none;">
                             <label for="logotipo" class="form-label">Logotipo</label>
@@ -191,8 +190,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" id="cardapio-tab" data-bs-toggle="tab" href="#tabCardapio">Cardápio</a>
-                    </li>
-                    <li class="nav-item">
+                    </li>                    <li class="nav-item">
                         <a class="nav-link" id="ramais-tab" data-bs-toggle="tab" href="#tabRamais">Ramais</a>
                     </li>
                     <li class="nav-item">
@@ -220,8 +218,7 @@
                     <div class="tab-pane fade" id="tabCardapio">
                         <input type="search" class="form-control search-bar" placeholder="Pesquisar cardápios..." oninput="filtrarLista(this)" onsearch="filtrarLista(this)">
                         <ul id="cardapioList" class="list-group"></ul>
-                    </div>
-                    <div class="tab-pane fade" id="tabRamais">
+                    </div>                    <div class="tab-pane fade" id="tabRamais">
                         <input type="search" class="form-control search-bar" placeholder="Pesquisar ramais..." oninput="filtrarLista(this)" onsearch="filtrarLista(this)">
                         <ul id="ramaisList" class="list-group"></ul>
                     </div>
@@ -370,7 +367,6 @@
                     };
 
                     cancelEditBtn.addEventListener('click', limparFormularioRamal);
-
                     window.removerDados = async function (tipo, id) {
                         if (!confirm('Tem certeza que deseja remover este registro?')) return;
 
@@ -553,7 +549,6 @@
                             alert("Por favor, selecione a imagem do cardápio.");
                             return;
                         }
-
                         let dados = {};
                         let error;
                         let successMessage = 'Cadastro realizado com sucesso!';
@@ -637,8 +632,6 @@
                                 return;
                             }
                         }
-
-
                         // ===== RAMAIS =====
                         if (tipo === 'ramais') {
                             dados = { name: nome, extension: ramal, department: setor, email: email };
@@ -705,8 +698,7 @@
                             imagemEventoDiv.style.display = 'block';
                             document.getElementById('dataField').style.display = 'block';
                         } else if (tipo === 'cardapio') {
-                            imagemCardapioDiv.style.display = 'block';
-                        } else if (tipo === 'ramais') {
+                            imagemCardapioDiv.style.display = 'block';                        } else if (tipo === 'ramais') {
                             document.getElementById('ramalFields').style.display = 'block';
                         } else if (tipo === 'identidade') {
                             logoIdentidadeDiv.style.display = 'block';
@@ -719,6 +711,7 @@
                     // Inicialização
                     carregarLogotipo();
                     adicionarFiltros();
+                    tipoInput.dispatchEvent(new Event('change')); // Atualiza os campos do tipo selecionado ao abrir
                     carregarDados();
                 </script>
             </div>

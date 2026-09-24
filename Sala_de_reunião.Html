@@ -722,7 +722,10 @@
     const SUPABASE_URL = 'https://woywqncdfuyworcbjjlv.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXdxbmNkZnV5d29yY2Jqamx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMTUyNzgsImV4cCI6MjA2MDU5MTI3OH0.o63pZx8l8oe1aEYKEaYVQyHgEvR5FGkfAygTLTvWWVA';
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const ITEMS_KEY = 'agendaSalaReuniaoItemsV2';
+    const AGENDA_TABLE = 'config_imagens_site';
+    const AGENDA_TIPO = 'agenda_sala_reuniao';
+    const LOCAL_BACKUP_KEY = 'agendaSalaReuniaoBackupV3';
+    const LEGACY_ITEMS_KEY = 'agendaSalaReuniaoItemsV2';
     const WEEKDAYS = ['DOMINGO', 'SEGUNDA FEIRA', 'TERCA FEIRA', 'QUARTA FEIRA', 'QUINTA FEIRA', 'SEXTA FEIRA', 'SABADO'];
     const SAMPLE_DATA = `03/08/2026\tSEGUNDA FEIRA\t09:00\t12:00\tLimerci
 03/08/2026\tSEGUNDA FEIRA\t14:00\t17:50\tJunior\t\tPERMANENTE\t\tAgendar
@@ -735,6 +738,11 @@
 21/08/2026\tSEXTA FEIRA\t14:30\t15:30\tCarlos\t\tPERMANENTE\tReservar toda 6 feira\tAgendar`;
 
     let items = [];
+    let deletedOccurrences = [];
+    let recurrenceStops = [];
+    let agendaConfigId = null;
+    let agendaChannel = null;
+    let isSyncingAgenda = false;
     let activeMonth = monthKey(new Date());
     let activeDate = new Date();
     let currentView = 'month';
@@ -822,6 +830,29 @@
         normalize(item.status),
         normalize(item.recurrence)
       ].join('|');
+    }
+
+    
+    function occurrenceKey(item, dateOverride) {
+      return `${dateOverride || item.date}|${recurrenceKey(item)}`;
+    }
+
+    function isRecurrenceStopped(key, dateISO) {
+      return recurrenceStops.some(stop => stop && stop.key === key && dateISO >= stop.fromDate);
+    }
+
+    function addUnique(list, value) {
+      if (value && !list.includes(value)) list.push(value);
+    }
+
+    function setRecurrenceStop(key, fromDate) {
+      if (!key || !fromDate) return;
+      const existing = recurrenceStops.find(stop => stop.key === key);
+      if (existing) {
+        if (fromDate < existing.fromDate) existing.fromDate = fromDate;
+        return;
+      }
+      recurrenceStops.push({ key, fromDate });
     }
 
     function nthWeekdayOfMonth(year, monthIndex, weekday, nth) {
@@ -940,32 +971,132 @@
       return kept.sort(sortItems);
     }
 
-    function saveItems() {
-      localStorage.setItem(ITEMS_KEY, JSON.stringify(items));
+    function storageItems() {
+      return items.filter(item => !item.generated).sort(sortItems);
     }
 
-    function loadItems() {
-      const saved = localStorage.getItem(ITEMS_KEY);
-      if (saved) {
-        try {
-          items = JSON.parse(saved).filter(item => item.date);
-        } catch (error) {
-          items = [];
-        }
-      }
-      if (!items.length) {
-        items = parseAgendaText(SAMPLE_DATA);
-      }
-      items = generatePermanentCopies(items);
-      saveItems();
+    function agendaPayload() {
+      return {
+        version: 3,
+        items: storageItems(),
+        deletedOccurrences: [...new Set(deletedOccurrences)],
+        recurrenceStops: recurrenceStops.filter(stop => stop && stop.key && stop.fromDate)
+      };
+    }
 
+    function applyAgendaPayload(payload) {
+      const source = payload && typeof payload === 'object' ? payload : {};
+      items = Array.isArray(source.items) ? source.items.filter(item => item && item.date) : [];
+      deletedOccurrences = Array.isArray(source.deletedOccurrences) ? [...new Set(source.deletedOccurrences.filter(Boolean))] : [];
+      recurrenceStops = Array.isArray(source.recurrenceStops)
+        ? source.recurrenceStops.filter(stop => stop && stop.key && stop.fromDate)
+        : [];
+      if (!items.length) items = parseAgendaText(SAMPLE_DATA);
+      items = generatePermanentCopies(items);
+    }
+
+    function initialAgendaPayload() {
+      const legacy = localStorage.getItem(LEGACY_ITEMS_KEY);
+      if (legacy) {
+        try {
+          const legacyItems = JSON.parse(legacy).filter(item => item && item.date);
+          if (legacyItems.length) return { items: legacyItems, deletedOccurrences: [], recurrenceStops: [] };
+        } catch (error) {}
+      }
+      return { items: parseAgendaText(SAMPLE_DATA), deletedOccurrences: [], recurrenceStops: [] };
+    }
+
+    function ajustarPeriodoAtivo() {
       const todayKey = monthKey(new Date());
       const keys = [...new Set(items.map(item => item.date.slice(0, 7)))].sort();
-      activeMonth = keys.includes(todayKey) ? todayKey : (keys[keys.length - 1] || todayKey);
+      if (!keys.includes(activeMonth)) activeMonth = keys.includes(todayKey) ? todayKey : (keys[keys.length - 1] || todayKey);
       const firstDate = items.find(item => item.date.slice(0, 7) === activeMonth);
-      activeDate = firstDate ? parseDateISO(firstDate.date) : new Date();
+      if (!activeDate || Number.isNaN(activeDate.getTime())) activeDate = firstDate ? parseDateISO(firstDate.date) : new Date();
+    }
+
+    async function saveItems() {
+      const payload = agendaPayload();
+      localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify(payload));
+
+      const record = {
+        nome: 'Agenda da Sala de Reuniao',
+        tipo: AGENDA_TIPO,
+        descricao: JSON.stringify(payload),
+        atualizado_em: new Date().toISOString()
+      };
+
+      let error = null;
+      if (agendaConfigId) {
+        ({ error } = await db.from(AGENDA_TABLE).update(record).eq('id', agendaConfigId));
+      }
+
+      if (!agendaConfigId || error) {
+        const response = await db
+          .from(AGENDA_TABLE)
+          .insert([record])
+          .select('id')
+          .single();
+        error = response.error;
+        if (!error && response.data) agendaConfigId = response.data.id;
+      }
+
+      if (error) {
+        alert('Nao foi possivel salvar a agenda compartilhada. Verifique a conexao e tente novamente.');
+        throw error;
+      }
+    }
+
+    async function loadItems(showError = true) {
+      if (isSyncingAgenda) return;
+      isSyncingAgenda = true;
+      try {
+        const { data, error } = await db
+          .from(AGENDA_TABLE)
+          .select('id, descricao, atualizado_em')
+          .eq('tipo', AGENDA_TIPO)
+          .order('atualizado_em', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (data && data.descricao) {
+          agendaConfigId = data.id;
+          applyAgendaPayload(JSON.parse(data.descricao));
+        } else {
+          applyAgendaPayload(initialAgendaPayload());
+          await saveItems();
+        }
+      } catch (error) {
+        console.error('Agenda compartilhada:', error);
+        const backup = localStorage.getItem(LOCAL_BACKUP_KEY);
+        if (backup) {
+          try {
+            applyAgendaPayload(JSON.parse(backup));
+          } catch (backupError) {
+            applyAgendaPayload(initialAgendaPayload());
+          }
+        } else {
+          applyAgendaPayload(initialAgendaPayload());
+        }
+        if (showError) alert('Nao foi possivel carregar a agenda compartilhada. Mostrando copia local desta maquina.');
+      } finally {
+        isSyncingAgenda = false;
+      }
+
+      ajustarPeriodoAtivo();
       preencherMeses();
       render();
+      iniciarSincronizacaoAgenda();
+    }
+
+    function iniciarSincronizacaoAgenda() {
+      if (agendaChannel) return;
+      agendaChannel = db
+        .channel('agenda-sala-reuniao-sync')
+        .on('postgres_changes', { event: '*', schema: 'public', table: AGENDA_TABLE, filter: `tipo=eq.${AGENDA_TIPO}` }, () => loadItems(false))
+        .subscribe();
+      setInterval(() => loadItems(false), 30000);
     }
 
     function preencherMeses() {
@@ -1228,13 +1359,14 @@
       }) || null;
     }
 
-    function salvarReserva(event) {
+    async function salvarReserva(event) {
       event.preventDefault();
       const date = document.getElementById('dateInput').value;
       const parsed = parseDateISO(date);
       if (!parsed) return;
       const id = document.getElementById('reservaId').value || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
       const existingRecord = items.find(item => item.id === id);
+      const oldOccurrenceKey = existingRecord ? occurrenceKey(existingRecord) : null;
       const record = {
         id,
         date,
@@ -1261,14 +1393,40 @@
         return;
       }
 
-      const index = items.findIndex(item => item.id === id);
-      if (index >= 0) items[index] = record;
-      else items.push(record);
-      if (isPermanent(record)) items = generatePermanentCopies(items);
+      if (isPermanent(record) && !existingRecord) {
+        const repetir = confirm('Este agendamento deve ser replicado nos demais dias/meses?\n\nOK = replicar nos demais dias\nCancelar = salvar somente este dia');
+        if (!repetir) {
+          record.status = '';
+          record.recurrence = '';
+        }
+      }
+
+      if (existingRecord && isPermanent(existingRecord) && existingRecord.generated) {
+        const alterarSerie = confirm('Este horario veio de um agendamento permanente. Deseja alterar este dia e os proximos dias da serie?\n\nOK = alterar este e os proximos dias\nCancelar = alterar somente este dia');
+        addUnique(deletedOccurrences, oldOccurrenceKey);
+        if (alterarSerie) {
+          setRecurrenceStop(recurrenceKey(existingRecord), existingRecord.date);
+        } else {
+          record.status = '';
+          record.recurrence = '';
+        }
+      }
+
+      const baseItems = storageItems().filter(item => item.id !== id);
+      const cleanedBaseItems = existingRecord && isPermanent(existingRecord) && existingRecord.generated
+        ? baseItems.filter(item => !(recurrenceKey(item) === recurrenceKey(existingRecord) && item.date >= existingRecord.date))
+        : baseItems;
+
+      cleanedBaseItems.push({ ...record, generated: false });
+      items = generatePermanentCopies(cleanedBaseItems);
       items.sort(sortItems);
       activeMonth = date.slice(0, 7);
       activeDate = parsed;
-      saveItems();
+      try {
+        await saveItems();
+      } catch (error) {
+        return;
+      }
       fecharReserva();
       render();
     }
@@ -1302,11 +1460,37 @@
 
     async function removerReservaAdmin() {
       const id = document.getElementById('reservaId').value;
-      if (!id || !confirm('Remover este agendamento?')) return;
+      if (!id) return;
+      const item = items.find(entry => entry.id === id);
+      if (!item) return;
       const autorizado = await validarRemocaoEloisa();
       if (!autorizado) return;
-      items = items.filter(item => item.id !== id);
-      saveItems();
+
+      let baseItems = storageItems();
+      if (isPermanent(item)) {
+        const removerSerie = confirm('Este agendamento e permanente. Deseja excluir este dia e os proximos dias da serie?\n\nOK = excluir este e os proximos dias\nCancelar = excluir somente este dia');
+        if (removerSerie) {
+          const key = recurrenceKey(item);
+          setRecurrenceStop(key, item.date);
+          baseItems = baseItems.filter(entry => !(recurrenceKey(entry) === key && entry.date >= item.date));
+          items = items.filter(entry => !(recurrenceKey(entry) === key && entry.date >= item.date));
+        } else {
+          addUnique(deletedOccurrences, occurrenceKey(item));
+          baseItems = baseItems.filter(entry => entry.id !== id);
+          items = items.filter(entry => entry.id !== id);
+        }
+      } else {
+        if (!confirm('Remover este agendamento?')) return;
+        baseItems = baseItems.filter(entry => entry.id !== id);
+        items = items.filter(entry => entry.id !== id);
+      }
+
+      items = generatePermanentCopies(baseItems);
+      try {
+        await saveItems();
+      } catch (error) {
+        return;
+      }
       fecharReserva();
       render();
     }
@@ -1354,7 +1538,7 @@
 
     function validarAcessoSala() {
       const senha = prompt('Informar a senha de acesso');
-      if (senha === 'Padrao123@') return true;
+      if (senha === 'PDO') return true;
       alert('Senha de acesso incorreta.');
       window.location.href = 'index.html';
       return false;
@@ -1367,3 +1551,4 @@
   </script>
 </body>
 </html>
+
