@@ -559,6 +559,22 @@
     .help { margin: 0; color: var(--muted); font-size: 13px; }
     .quick-times { margin-top: 2px; }
     .quick-times .btn { padding: 6px 9px; }
+    .weekday-recurrence {
+      display: none;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .weekday-recurrence.open { display: flex; }
+    .weekday-recurrence button {
+      min-width: 42px;
+      padding: 7px 10px;
+    }
+    .weekday-recurrence button.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #fff;
+    }
 
     @media (max-width: 1050px) {
       .calendar-shell { grid-template-columns: 1fr; }
@@ -697,6 +713,15 @@
           <div class="field wide">
             <label for="recurrenceInput">Observa&ccedil;&atilde;o / recorr&ecirc;ncia</label>
             <input id="recurrenceInput" type="text" placeholder="Ex.: toda sexta-feira, primeira segunda do m&ecirc;s...">
+            <div class="weekday-recurrence" id="weekdayRecurrence" aria-label="Dias da recorrência">
+              <button class="btn" type="button" data-weekday="1" onclick="alternarDiaRecorrencia(this)">Seg</button>
+              <button class="btn" type="button" data-weekday="2" onclick="alternarDiaRecorrencia(this)">Ter</button>
+              <button class="btn" type="button" data-weekday="3" onclick="alternarDiaRecorrencia(this)">Qua</button>
+              <button class="btn" type="button" data-weekday="4" onclick="alternarDiaRecorrencia(this)">Qui</button>
+              <button class="btn" type="button" data-weekday="5" onclick="alternarDiaRecorrencia(this)">Sex</button>
+              <button class="btn" type="button" data-weekday="6" onclick="alternarDiaRecorrencia(this)">Sáb</button>
+              <button class="btn" type="button" data-weekday="0" onclick="alternarDiaRecorrencia(this)">Dom</button>
+            </div>
           </div>
         </div>
         <div>
@@ -833,6 +858,50 @@
       return normalize(item.status).includes('permanente') || normalize(item.recurrence).includes('toda');
     }
 
+    function selectedWeekdaysFromText(text) {
+      const value = normalize(text);
+      const aliases = [
+        ['domingo', 'dom'],
+        ['segunda', 'seg'],
+        ['terca', 'ter'],
+        ['quarta', 'qua'],
+        ['quinta', 'qui'],
+        ['sexta', 'sex'],
+        ['sabado', 'sab']
+      ];
+      return aliases
+        .map((names, index) => names.some(name => value.includes(name)) ? index : null)
+        .filter(index => index !== null);
+    }
+
+    function syncWeekdayButtonsFromText(text) {
+      const selected = new Set(selectedWeekdaysFromText(text));
+      document.querySelectorAll('#weekdayRecurrence button').forEach(button => {
+        button.classList.toggle('active', selected.has(Number(button.dataset.weekday)));
+      });
+    }
+
+    function recurrenceTextFromWeekdayButtons(currentText) {
+      const selected = [...document.querySelectorAll('#weekdayRecurrence button.active')]
+        .map(button => Number(button.dataset.weekday));
+      if (!selected.length) return currentText.trim();
+      const names = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+      return 'toda ' + selected.map(index => names[index]).join(', ');
+    }
+
+    function alternarDiaRecorrencia(button) {
+      button.classList.toggle('active');
+      document.getElementById('recurrenceInput').value = recurrenceTextFromWeekdayButtons(document.getElementById('recurrenceInput').value);
+    }
+
+    function atualizarControlesRecorrencia() {
+      const isPerm = document.getElementById('statusInput').value === 'PERMANENTE';
+      document.getElementById('weekdayRecurrence').classList.toggle('open', isPerm);
+      if (!isPerm) {
+        document.querySelectorAll('#weekdayRecurrence button').forEach(button => button.classList.remove('active'));
+      }
+    }
+
     function isToday(date) {
       const now = new Date();
       return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
@@ -900,23 +969,26 @@
         const originalDate = itemDate(item);
         if (!originalDate) return;
         const ruleText = normalize(`${item.subject} ${item.recurrence}`);
-        const weekday = originalDate.getDay();
+        const weekdays = selectedWeekdaysFromText(item.recurrence);
+        const recurrenceWeekdays = weekdays.length ? weekdays : [originalDate.getDay()];
 
         years.forEach(year => {
           for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
             let dates = [];
 
-            if (ruleText.includes('1') && ruleText.includes('mes')) {
-              const date = nthWeekdayOfMonth(year, monthIndex, weekday, 1);
-              if (date) dates.push(date);
-            } else if (ruleText.includes('depois dia 20') || ruleText.includes('depois do dia 20')) {
-              const date = firstWeekdayAfterDay(year, monthIndex, weekday, 20);
-              if (date) dates.push(date);
-            } else {
-              for (let day = new Date(year, monthIndex, 1); day.getMonth() === monthIndex; day.setDate(day.getDate() + 1)) {
-                if (day.getDay() === weekday) dates.push(new Date(day));
+            recurrenceWeekdays.forEach(weekday => {
+              if (ruleText.includes('1') && ruleText.includes('mes')) {
+                const date = nthWeekdayOfMonth(year, monthIndex, weekday, 1);
+                if (date) dates.push(date);
+              } else if (ruleText.includes('depois dia 20') || ruleText.includes('depois do dia 20')) {
+                const date = firstWeekdayAfterDay(year, monthIndex, weekday, 20);
+                if (date) dates.push(date);
+              } else {
+                for (let day = new Date(year, monthIndex, 1); day.getMonth() === monthIndex; day.setDate(day.getDate() + 1)) {
+                  if (day.getDay() === weekday) dates.push(new Date(day));
+                }
               }
-            }
+            });
 
             dates.forEach(date => {
               const iso = toISODate(date);
@@ -1322,6 +1394,10 @@
       document.getElementById('startInput').value = '09:00';
       document.getElementById('endInput').value = '10:00';
       document.getElementById('deleteBtn').style.display = 'none';
+      document.getElementById('deleteFutureBtn').style.display = 'none';
+      document.getElementById('deleteSingleBtn').style.display = 'none';
+      syncWeekdayButtonsFromText('');
+      atualizarControlesRecorrencia();
       document.getElementById('reservaModal').classList.add('open');
     }
 
@@ -1337,6 +1413,8 @@
       document.getElementById('statusInput').value = item.status;
       document.getElementById('subjectInput').value = item.subject;
       document.getElementById('recurrenceInput').value = item.recurrence;
+      syncWeekdayButtonsFromText(item.recurrence);
+      atualizarControlesRecorrencia();
       if (isPermanent(item)) {
         document.getElementById('deleteBtn').style.display = 'none';
         document.getElementById('deleteFutureBtn').style.display = 'inline-flex';
@@ -1401,7 +1479,9 @@
         owner: document.getElementById('ownerInput').value.trim(),
         subject: document.getElementById('subjectInput').value.trim(),
         status: document.getElementById('statusInput').value,
-        recurrence: document.getElementById('recurrenceInput').value.trim(),
+        recurrence: document.getElementById('statusInput').value === 'PERMANENTE'
+          ? recurrenceTextFromWeekdayButtons(document.getElementById('recurrenceInput').value)
+          : document.getElementById('recurrenceInput').value.trim(),
         generated: Boolean(existingRecord && existingRecord.generated)
       };
 
@@ -1568,6 +1648,8 @@
       if (currentView === 'month' && selectedMonth) activeDate = selectedMonth;
       render();
     });
+    document.getElementById('statusInput').addEventListener('change', atualizarControlesRecorrencia);
+    document.getElementById('recurrenceInput').addEventListener('input', event => syncWeekdayButtonsFromText(event.target.value));
     document.getElementById('reservaForm').addEventListener('submit', salvarReserva);
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape') {

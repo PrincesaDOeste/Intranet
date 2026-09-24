@@ -401,14 +401,20 @@
                         let tableName = tipo === 'ramais' ? 'employees' : tipo;
                         if (tipo === 'identidade' || tipo === 'cardapio') tableName = 'config_imagens_site';
 
-                        const { error } = await supabase
+                        const { data: removidos, error } = await supabase
                             .from(tableName)
                             .delete()
-                            .eq('id', id);
+                            .eq('id', id)
+                            .select('id');
 
                         if (error) {
                             console.error(error);
                             alert('Erro ao remover registro: ' + error.message);
+                            return;
+                        }
+
+                        if (!removidos || removidos.length === 0) {
+                            alert('O Supabase não permitiu remover este registro. Verifique a política de exclusão da tabela.');
                             return;
                         }
 
@@ -472,8 +478,9 @@
                                         // item.nome, item.tipo, item.descricao, item.logotipo, item.imagem_destaque
                                         const left = document.createElement('div');
                                         left.innerHTML = `<strong>${item.nome || '(sem nome)'}</strong><br><small>${item.tipo || ''}</small>`;
-                                        if (item.descricao) {
-                                            left.innerHTML += `<div style="font-size:12px;color:#666;">${item.descricao}</div>`;
+                                        const periodo = tipo === 'cardapio' ? cardapioPeriodoInfo(item.descricao) : { texto: item.descricao || '' };
+                                        if (periodo.texto) {
+                                            left.innerHTML += `<div style="font-size:12px;color:#666;">${periodo.texto}</div>`;
                                         }
 
                                         li.appendChild(left);
