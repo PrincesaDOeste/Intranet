@@ -887,7 +887,8 @@
 
     function generatePermanentCopies(baseItems) {
       const sourceItems = baseItems.filter(item => !item.generated);
-      const byKey = new Set(baseItems.map(item => `${item.date}|${recurrenceKey(item)}`));
+      const byKey = new Set(baseItems.map(item => occurrenceKey(item)));
+      const deletedSet = new Set(deletedOccurrences);
       const copies = [];
       const currentYear = new Date().getFullYear();
       const years = [...new Set(sourceItems
@@ -919,8 +920,9 @@
 
             dates.forEach(date => {
               const iso = toISODate(date);
-              const key = `${iso}|${recurrenceKey(item)}`;
-              if (byKey.has(key)) return;
+              const seriesKey = recurrenceKey(item);
+              const key = `${iso}|${seriesKey}`;
+              if (deletedSet.has(key) || isRecurrenceStopped(seriesKey, iso) || byKey.has(key)) return;
               byKey.add(key);
               copies.push({
                 ...item,
