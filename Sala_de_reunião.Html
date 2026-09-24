@@ -866,7 +866,7 @@
       if (!key || !fromDate) return;
       const existing = recurrenceStops.find(stop => stop.key === key);
       if (existing) {
-        if (fromDate < existing.fromDate) existing.fromDate = fromDate;
+        existing.fromDate = fromDate;
         return;
       }
       recurrenceStops.push({ key, fromDate });
