@@ -1452,15 +1452,17 @@
         return false;
       }
 
-      const { data, error } = await db
-        .from('users')
-        .select('id')
-        .ilike('username', 'eloisa')
-        .eq('password', senha)
-        .limit(1)
-        .maybeSingle();
+      const { data, error } = await db.rpc('validar_senha_eloisa', {
+        senha_digitada: senha.trim()
+      });
 
-      if (error || !data) {
+      if (error) {
+        console.error('Validacao Eloisa:', error);
+        alert('Nao foi possivel validar a senha da Eloisa. Verifique a funcao no Supabase.');
+        return false;
+      }
+
+      if (data !== true) {
         alert('Somente a usuaria Eloisa pode remover agendamentos.');
         return false;
       }
